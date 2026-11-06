@@ -324,7 +324,7 @@ if step_now == 1:
             uploaded = up_col.file_uploader("Upload your credit report (PDF)", type=["pdf"])
             sample = sample_col.selectbox("Or use a sample report", list(SAMPLES), index=None,
                                           placeholder="Choose a sample", key="f_sample")
-            submitted = btn_col.form_submit_button("Read report", width="stretch")
+            submitted = btn_col.form_submit_button("Read report", type="primary", width="stretch")
             st.caption("Nothing you type is saved. It's only sent to Claude to read your report.")
 
         if submitted:
