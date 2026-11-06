@@ -1,0 +1,4 @@
+streamlit
+anthropic
+python-dotenv
+reportlab  # only for scripts/ (regenerating the synthetic data)

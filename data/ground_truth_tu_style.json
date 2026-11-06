@@ -1,0 +1,250 @@
+{
+  "_note": "Synthetic data. Same people and debts as ground_truth.json, rendered in a TU-style layout. Match accounts by account_last4. Accounts here show the creditor's address/phone, not the consumer's, so per-account phone/address checks don't apply.",
+  "layout": "TransUnion-style structure, fictional bureau",
+  "report_file": "credit_report_tu_style.pdf",
+  "report_date": "2026-10-28",
+  "law_cutoff_date": "2023-07-01",
+  "accounts": [
+    {
+      "id": 1,
+      "creditor": "GOLDEN STATE STUDENT LENDING",
+      "section": "satisfactory",
+      "account_number_as_printed": "XXXX-2280",
+      "account_last4": "2280",
+      "loan_type": "STUDENT LOAN",
+      "secured": false,
+      "secured_how_to_tell": null,
+      "date_opened": "2016-09-01",
+      "date_placed_for_collection": null,
+      "balance": 11420,
+      "label": "legit",
+      "expected_prediction": "likely_hers",
+      "acceptable_predictions": [
+        "likely_hers"
+      ],
+      "evidence_on_this_layout": [
+        "Opened 09/2016, years before the relationship"
+      ],
+      "split_across_page_break": true
+    },
+    {
+      "id": 2,
+      "creditor": "BAYLINE BANK VISA",
+      "section": "satisfactory",
+      "account_number_as_printed": "XXXX-9014",
+      "account_last4": "9014",
+      "loan_type": "CREDIT CARD",
+      "secured": false,
+      "secured_how_to_tell": null,
+      "date_opened": "2018-05-22",
+      "date_placed_for_collection": null,
+      "balance": 820,
+      "label": "legit",
+      "expected_prediction": "likely_hers",
+      "acceptable_predictions": [
+        "likely_hers"
+      ],
+      "evidence_on_this_layout": [
+        "Opened 05/2018, before the relationship"
+      ],
+      "split_across_page_break": false
+    },
+    {
+      "id": 3,
+      "creditor": "TECHMART FINANCING",
+      "section": "adverse",
+      "account_number_as_printed": "XXXX-0573",
+      "account_last4": "0573",
+      "loan_type": "CHARGE ACCOUNT",
+      "secured": false,
+      "secured_how_to_tell": null,
+      "date_opened": "2023-02-18",
+      "date_placed_for_collection": null,
+      "balance": 1240,
+      "label": "coerced",
+      "expected_prediction": "likely_coerced",
+      "acceptable_predictions": [
+        "likely_coerced"
+      ],
+      "evidence_on_this_layout": [
+        "She names the TechMart card in her story"
+      ],
+      "split_across_page_break": false,
+      "mechanism": "duress (pressured to open the card, which he used)",
+      "eligible_for_notice": false,
+      "exclusion_reason": "Incurred before July 1, 2023 (Civil Code 1798.97.5). The notice process doesn't apply, though she could still raise coerced debt in a cross-complaint if sued."
+    },
+    {
+      "id": 4,
+      "creditor": "PACIFIC CREST CARD",
+      "section": "adverse",
+      "account_number_as_printed": "XXXX-3391",
+      "account_last4": "3391",
+      "loan_type": "CREDIT CARD",
+      "secured": false,
+      "secured_how_to_tell": null,
+      "date_opened": "2023-08-14",
+      "date_placed_for_collection": null,
+      "balance": 0,
+      "label": "coerced",
+      "expected_prediction": "likely_coerced",
+      "acceptable_predictions": [
+        "likely_coerced",
+        "needs_review"
+      ],
+      "evidence_on_this_layout": [
+        "Her story: collectors calling about 'a credit card ... I never opened'",
+        "Charged off and sold; the matching collection is Summit Recovery Group",
+        "Opened during the relationship"
+      ],
+      "split_across_page_break": false,
+      "mechanism": "fraud (opened without her knowledge)",
+      "eligible_for_notice": true,
+      "current_holder_account_id": 5,
+      "notes": "Original creditor sold the debt; the notice goes to the current holder, Summit Recovery Group."
+    },
+    {
+      "id": 5,
+      "creditor": "SUMMIT RECOVERY GROUP",
+      "section": "collections",
+      "account_number_as_printed": "XXXX-8820",
+      "account_last4": "8820",
+      "loan_type": "COLLECTION AGENCY/ATTORNEY",
+      "secured": false,
+      "secured_how_to_tell": null,
+      "date_opened": null,
+      "date_placed_for_collection": "06/2025",
+      "balance": 6912,
+      "label": "coerced",
+      "expected_prediction": "likely_coerced",
+      "acceptable_predictions": [
+        "likely_coerced",
+        "needs_review"
+      ],
+      "evidence_on_this_layout": [
+        "Same debt as Pacific Crest Card (Original Creditor PACIFIC CREST CRD, Original Balance $6,400 = Pacific Crest High Balance)",
+        "A collector on a credit card she says she never opened"
+      ],
+      "split_across_page_break": false,
+      "mechanism": "same debt as account 4 (collection)",
+      "eligible_for_notice": true,
+      "linked_account_id": 4,
+      "notice_recipient": true,
+      "original_creditor": "PACIFIC CREST CRD"
+    },
+    {
+      "id": 6,
+      "creditor": "VALLEY AUTO FINANCE",
+      "section": "adverse",
+      "account_number_as_printed": "XXXX-7142",
+      "account_last4": "7142",
+      "loan_type": "AUTOMOBILE",
+      "secured": true,
+      "secured_how_to_tell": "Loan Type AUTOMOBILE",
+      "date_opened": "2023-11-05",
+      "date_placed_for_collection": null,
+      "balance": 14200,
+      "label": "coerced",
+      "expected_prediction": "likely_coerced",
+      "acceptable_predictions": [
+        "likely_coerced"
+      ],
+      "evidence_on_this_layout": [
+        "She names the car loan in her story"
+      ],
+      "split_across_page_break": false,
+      "mechanism": "duress (pressured to co-sign)",
+      "eligible_for_notice": false,
+      "exclusion_reason": "Secured debt (Civil Code 1798.97.4(a))."
+    },
+    {
+      "id": 7,
+      "creditor": "QUICKFUND PERSONAL LOAN",
+      "section": "adverse",
+      "account_number_as_printed": "X X X X - 6 6 0 5",
+      "account_last4": "6605",
+      "loan_type": "UNSECURED",
+      "secured": false,
+      "secured_how_to_tell": null,
+      "date_opened": "2025-03-04",
+      "date_placed_for_collection": null,
+      "balance": 3500,
+      "label": "coerced",
+      "expected_prediction": "likely_coerced",
+      "acceptable_predictions": [
+        "likely_coerced"
+      ],
+      "evidence_on_this_layout": [
+        "Opened 03/04/2025, after she moved out (01/2025)",
+        "Unknown PO BOX 2291, SACRAMENTO first reported 03/2025, the month this loan opened",
+        "Regular inquiry 03/02/2025 from QuickFund",
+        "Her story: a loan she never opened"
+      ],
+      "split_across_page_break": true,
+      "mechanism": "fraud (opened without her knowledge)",
+      "eligible_for_notice": true,
+      "notice_recipient": true
+    },
+    {
+      "id": 8,
+      "creditor": "FRESNO COMMUNITY CREDIT UNION",
+      "section": "satisfactory",
+      "account_number_as_printed": "XXXX-4471",
+      "account_last4": "4471",
+      "loan_type": "CREDIT CARD",
+      "secured": false,
+      "secured_how_to_tell": null,
+      "date_opened": "2025-04-12",
+      "date_placed_for_collection": null,
+      "balance": 310,
+      "label": "legit",
+      "expected_prediction": "likely_hers",
+      "acceptable_predictions": [
+        "likely_hers",
+        "needs_review"
+      ],
+      "evidence_on_this_layout": [
+        "Opened 04/2025 in Fresno, the city she moved to in 02/2025",
+        "Paid as agreed"
+      ],
+      "split_across_page_break": false,
+      "notes": "False-positive trap: opened after she moved, but at her own new address with her own phone."
+    }
+  ],
+  "expected_letters": [
+    {
+      "recipient": "SUMMIT RECOVERY GROUP",
+      "recipient_contact": "PO Box 40912, Irvine, CA 92623 \u00b7 (800) 555-0161",
+      "account_ids": [
+        4,
+        5
+      ],
+      "amount": 6912,
+      "why": "Coerced (fraud), unsecured, incurred 2023-08-14. Debt was sold, so the notice goes to the collector."
+    },
+    {
+      "recipient": "QUICKFUND PERSONAL LOAN",
+      "recipient_contact": "2200 Market Pl Ste 400, San Jose, CA 95113 \u00b7 (888) 555-0174",
+      "account_ids": [
+        7
+      ],
+      "amount": 3500,
+      "why": "Coerced (fraud), unsecured, incurred 2025-03-04."
+    }
+  ],
+  "expected_exclusions": [
+    {
+      "account_id": 3,
+      "reason": "Incurred before 2023-07-01"
+    },
+    {
+      "account_id": 6,
+      "reason": "Secured debt"
+    }
+  ],
+  "expected_legit": [
+    1,
+    2,
+    8
+  ]
+}

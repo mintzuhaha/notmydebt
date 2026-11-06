@@ -1,0 +1,247 @@
+{
+  "_note": "Synthetic data. Correct answers for testing extraction, linking, flagging and eligibility.",
+  "report_date": "2026-10-28",
+  "law_cutoff_date": "2023-07-01",
+  "persona": {
+    "name": "Dana M. Whitfield",
+    "ssn_masked": "XXX-XX-4417",
+    "year_of_birth": 1991,
+    "phone": "(559) 555-0148",
+    "email": "dana.whitfield@example.com",
+    "addresses": [
+      {
+        "id": "A",
+        "address": "88 Linden St Apt 3, Oakland, CA 94607",
+        "from": "2019-01",
+        "to": "2022-03"
+      },
+      {
+        "id": "B",
+        "address": "1427 Alder Creek Rd, Sacramento, CA 95819",
+        "from": "2022-04",
+        "to": "2025-01",
+        "note": "lived with partner"
+      },
+      {
+        "id": "C",
+        "address": "610 Harmon Ave, Fresno, CA 93721",
+        "from": "2025-02",
+        "to": null
+      }
+    ],
+    "relationship_with_abuser": {
+      "from": "2022-04",
+      "to": "2025-01"
+    }
+  },
+  "accounts": [
+    {
+      "id": 1,
+      "creditor": "GOLDEN STATE STUDENT LENDING",
+      "account_number": "XXXX-2280",
+      "account_type": "Installment - Student loan",
+      "secured": false,
+      "date_opened": "2016-09",
+      "status": "Pays as agreed",
+      "balance": 11420,
+      "address_reported": "610 HARMON AVE, FRESNO CA 93721",
+      "address_matches_persona": "C",
+      "phone_reported": "(559) 555-0148",
+      "phone_is_hers": true,
+      "split_across_page_break": false,
+      "label": "legit"
+    },
+    {
+      "id": 2,
+      "creditor": "BAYLINE BANK VISA",
+      "account_number": "XXXX-9014",
+      "account_type": "Revolving - Credit card",
+      "secured": false,
+      "date_opened": "2018-05",
+      "status": "Pays as agreed",
+      "balance": 820,
+      "address_reported": "610 Harmon Ave, Fresno CA 93721",
+      "address_matches_persona": "C",
+      "phone_reported": "(559) 555-0148",
+      "phone_is_hers": true,
+      "split_across_page_break": true,
+      "label": "legit"
+    },
+    {
+      "id": 3,
+      "creditor": "TECHMART FINANCING",
+      "account_number": "XXXX-0573",
+      "account_type": "Revolving - Store card",
+      "secured": false,
+      "date_opened": "2023-02-18",
+      "status": "Charged off \u00b7 In collection",
+      "balance": 1240,
+      "address_reported": "1427 Alder Crk Rd, Sacramento CA 95819",
+      "address_matches_persona": "B",
+      "phone_reported": "(559) 555-0148",
+      "phone_is_hers": true,
+      "split_across_page_break": false,
+      "label": "coerced",
+      "mechanism": "duress (pressured to open the card, which he used)",
+      "eligible_for_notice": false,
+      "exclusion_reason": "Incurred before July 1, 2023 (Civil Code 1798.97.5). The notice process doesn't apply, though she could still raise coerced debt in a cross-complaint if sued.",
+      "detection_signals": [
+        "Opened during the relationship",
+        "Creditor still reports address B, which she left in 2025-01",
+        "Dana names it in her intake story"
+      ]
+    },
+    {
+      "id": 4,
+      "creditor": "PACIFIC CREST CARD",
+      "account_number": "XXXX-3391",
+      "account_type": "Revolving - Credit card",
+      "secured": false,
+      "date_opened": "2023-08-14",
+      "status": "Charged off \u00b7 Sold to another lender",
+      "balance": 0,
+      "address_reported": "1427 Alder Crk Rd, Sacramento CA 95819",
+      "address_matches_persona": "B",
+      "phone_reported": "(916) 555-0193",
+      "phone_is_hers": false,
+      "split_across_page_break": false,
+      "label": "coerced",
+      "mechanism": "fraud (opened without her knowledge)",
+      "eligible_for_notice": true,
+      "current_holder_account_id": 5,
+      "notes": "Original creditor sold the debt; the notice goes to the current holder, Summit Recovery Group.",
+      "detection_signals": [
+        "Phone on file (916) 555-0193 is not hers",
+        "Opened during the relationship, at the shared address",
+        "Creditor still reports address B after she left"
+      ]
+    },
+    {
+      "id": 5,
+      "creditor": "SUMMIT RECOVERY GROUP",
+      "account_number": "XXXX-8820",
+      "account_type": "Collection",
+      "secured": false,
+      "date_opened": "2025-06",
+      "status": "Collection",
+      "balance": 6912,
+      "address_reported": "1427 ALDER CREEK ROAD, SACRAMENTO CA 95819",
+      "address_matches_persona": "B",
+      "phone_reported": "(916) 555-0193",
+      "phone_is_hers": false,
+      "split_across_page_break": false,
+      "original_creditor": "PACIFIC CREST CRD",
+      "label": "coerced",
+      "mechanism": "same debt as account 4 (collection)",
+      "eligible_for_notice": true,
+      "linked_account_id": 4,
+      "notice_recipient": true,
+      "detection_signals": [
+        "Original creditor field matches account 4 (name abbreviated)",
+        "Original amount matches account 4's high balance ($6,400)",
+        "Same unknown phone (916) 555-0193"
+      ]
+    },
+    {
+      "id": 6,
+      "creditor": "VALLEY AUTO FINANCE",
+      "account_number": "XXXX-7142",
+      "account_type": "Installment - Auto loan",
+      "secured": true,
+      "date_opened": "2023-11-05",
+      "status": "60 days past due",
+      "balance": 14200,
+      "address_reported": "1427 ALDER CREEK ROAD, SACRAMENTO CA 95819",
+      "address_matches_persona": "B",
+      "phone_reported": "(559) 555-0148",
+      "phone_is_hers": true,
+      "split_across_page_break": true,
+      "label": "coerced",
+      "mechanism": "duress (pressured to co-sign)",
+      "eligible_for_notice": false,
+      "exclusion_reason": "Secured debt (Civil Code 1798.97.4(a)).",
+      "detection_signals": [
+        "Opened during the relationship",
+        "Dana names it in her intake story"
+      ]
+    },
+    {
+      "id": 7,
+      "creditor": "QUICKFUND PERSONAL LOAN",
+      "account_number": "XXXX-6605",
+      "account_type": "Installment - Personal loan (unsecured)",
+      "secured": false,
+      "date_opened": "2025-03-04",
+      "status": "120 days past due",
+      "balance": 3500,
+      "address_reported": "PO BOX 2291, SACRAMENTO CA 95812",
+      "address_matches_persona": null,
+      "phone_reported": "(916) 555-0193",
+      "phone_is_hers": false,
+      "split_across_page_break": false,
+      "label": "coerced",
+      "mechanism": "fraud (opened without her knowledge)",
+      "eligible_for_notice": true,
+      "notice_recipient": true,
+      "detection_signals": [
+        "Opened 2025-03-04, after she moved out in 2025-01",
+        "Address is a PO box she never had",
+        "Phone on file (916) 555-0193 is not hers",
+        "Hard inquiry 03/02/2025"
+      ]
+    },
+    {
+      "id": 8,
+      "creditor": "FRESNO COMMUNITY CREDIT UNION",
+      "account_number": "XXXX-4471",
+      "account_type": "Revolving - Credit card",
+      "secured": false,
+      "date_opened": "2025-04",
+      "status": "Pays as agreed",
+      "balance": 310,
+      "address_reported": "610 HARMON AVE, FRESNO CA 93721",
+      "address_matches_persona": "C",
+      "phone_reported": "(559) 555-0148",
+      "phone_is_hers": true,
+      "split_across_page_break": false,
+      "label": "legit",
+      "notes": "False-positive trap: opened after she moved, but at her own new address with her own phone."
+    }
+  ],
+  "expected_letters": [
+    {
+      "recipient": "SUMMIT RECOVERY GROUP",
+      "recipient_contact": "PO Box 40912, Irvine, CA 92623 \u00b7 (800) 555-0161",
+      "account_ids": [
+        4,
+        5
+      ],
+      "amount": 6912,
+      "why": "Coerced (fraud), unsecured, incurred 2023-08-14. Debt was sold, so the notice goes to the collector."
+    },
+    {
+      "recipient": "QUICKFUND PERSONAL LOAN",
+      "recipient_contact": "2200 Market Pl Ste 400, San Jose, CA 95113 \u00b7 (888) 555-0174",
+      "account_ids": [
+        7
+      ],
+      "amount": 3500,
+      "why": "Coerced (fraud), unsecured, incurred 2025-03-04."
+    }
+  ],
+  "expected_exclusions": [
+    {
+      "account_id": 3,
+      "reason": "Incurred before 2023-07-01"
+    },
+    {
+      "account_id": 6,
+      "reason": "Secured debt"
+    }
+  ],
+  "expected_legit": [
+    1,
+    2,
+    8
+  ]
+}

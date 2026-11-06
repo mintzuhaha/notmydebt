@@ -1,0 +1,49 @@
+{
+  "_note": "Synthetic data. What Dana tells her advocate at intake.",
+  "client": {
+    "name": "Dana M. Whitfield",
+    "phone": "(559) 555-0148",
+    "email": "dana.whitfield@example.com",
+    "mailing_address": "610 Harmon Ave, Fresno, CA 93721",
+    "contact_preference": "Written communication only, by mail"
+  },
+  "address_history": [
+    {
+      "id": "A",
+      "address": "88 Linden St Apt 3, Oakland, CA 94607",
+      "from": "2019-01",
+      "to": "2022-03"
+    },
+    {
+      "id": "B",
+      "address": "1427 Alder Creek Rd, Sacramento, CA 95819",
+      "from": "2022-04",
+      "to": "2025-01",
+      "note": "lived with partner"
+    },
+    {
+      "id": "C",
+      "address": "610 Harmon Ave, Fresno, CA 93721",
+      "from": "2025-02",
+      "to": null
+    }
+  ],
+  "relationship": {
+    "from": "2022-04",
+    "to": "2025-01",
+    "note": "Lived together at 1427 Alder Creek Rd, Sacramento"
+  },
+  "story": "He handled all our money and pressured me to sign things. He made me co-sign the car loan and open a TechMart card that he used. I left in January 2025. Since then, collectors have been calling about a credit card and a loan I never opened. I don't know what else is out there.",
+  "safety": {
+    "name_the_abuser": false,
+    "reason": "Disclosing his identity is likely to lead to further abuse."
+  },
+  "documentation_available": [
+    {
+      "type": "qualified_third_party_certification",
+      "provider": "Domestic violence counselor, Central Valley Family Safety Center (fictional)",
+      "status": "Counselor has agreed to sign a certification"
+    }
+  ],
+  "credit_report_file": "credit_report.pdf"
+}
