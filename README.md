@@ -28,6 +28,28 @@ python eval.py            # scores the pipeline against both answer keys
 
 ## Eval
 
-_Scoreboard goes here._
+`python eval.py` sends both sample PDFs to Claude live (`claude-sonnet-5-5`) and matches accounts by their last 4 digits.
+
+| Check | `credit_report.pdf` | `credit_report_tu_style.pdf` |
+|---|---|---|
+| Accounts found | 8/8 ✅ | 8/8 ✅ |
+| Balance matches | 8/8 ✅ | 8/8 ✅ |
+| Date opened matches (to the month) | 8/8 ✅ | 7/7 ✅ (the collection has no open date) |
+| Prediction matches the answer key | 8/8 ✅ | 8/8 ✅ |
+| Fresno CU (false-positive trap) not flagged | ✅ | ✅ |
+| Collection linked to original (3391 ↔ 8820) | ✅ | ✅ |
+| `is_secured()` only for Valley Auto (7142) | ✅ | ✅ |
+| Coverage: 8820 via 3391 covered, 6605 covered, 0573 before 7/1/2023, 7142 secured | 4/4 ✅ | 4/4 ✅ |
+| Covered total $10,412 | ✅ | ✅ |
+| **Total** | **33/33** | **32/32** |
+
+**65/65 checks pass.**
+
+Limitations:
+- Uses each account's open date as when the debt was incurred. A card opened before July 1, 2023 may have charges
+  after that date that the law covers. Check with your advocate.
+- California only, and only one bureau report at a time.
+- Forced `tool_choice` isn't supported on `claude-sonnet-5-5`, so the call uses a strict `record_accounts` tool
+  with `tool_choice: auto` and raises an error if Claude doesn't call it.
 
 Built with Claude Code at the Code with Claude – Women in AI Hackathon.

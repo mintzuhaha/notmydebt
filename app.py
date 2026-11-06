@@ -77,11 +77,11 @@ def run_analysis(pdf_bytes):
     """One Claude call per distinct PDF (cached in memory). Falls back to a saved result for the samples."""
     try:
         return core.analyze(pdf_bytes, INTAKE), None
-    except Exception as e:
+    except Exception:
         fixture = SAMPLE_FIXTURES.get(hashlib.sha256(pdf_bytes).hexdigest())
         if fixture is None:
             raise
-        return json.loads(fixture.read_text()), f"Couldn't reach Claude ({e}). Showing a saved result for this sample."
+        return json.loads(fixture.read_text()), "Couldn't reach Claude, so this shows a saved result for this sample report."
 
 
 # --- Header + Quick exit ------------------------------------------------------
