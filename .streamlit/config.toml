@@ -1,9 +1,7 @@
 [theme]
-primaryColor = "#2563eb"
-backgroundColor = "#fafafa"
-secondaryBackgroundColor = "#f3f4f6"
-textColor = "#1f2328"
-font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, sans-serif"
-
-[client]
-toolbarMode = "minimal"
+base = "light"
+primaryColor = "#5B3B8C"
+backgroundColor = "#FAF8FC"
+secondaryBackgroundColor = "#EFEAF6"
+textColor = "#2A2140"
+font = "sans serif"

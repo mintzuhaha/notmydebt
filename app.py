@@ -10,6 +10,7 @@ import pandas as pd
 import streamlit as st
 
 import core
+import ui
 
 ROOT = pathlib.Path(__file__).parent
 DATA = ROOT / "data"
@@ -25,45 +26,27 @@ SAMPLE_FIXTURES = {
 }
 RANK = {"likely_coerced": 0, "needs_review": 1, "likely_hers": 2}
 STATUS_RANK = {"covered": 0, "needs_info": 1, "not_covered_secured": 2, "not_covered_date": 3}
-PILL = {"likely_coerced": ("Likely coerced", "red"),
-        "needs_review": ("Needs review", "amber"),
-        "likely_hers": ("Likely yours", "gray")}
 MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
-st.set_page_config(page_title="NotMyDebt", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="NotMyDebt", page_icon=str(ROOT / "assets" / "notmydebt_icon.png"))
 
-CSS = """
+COLORS = ui.SCHEMES[ui.SCHEME]
+APP_CSS = f"""
 <style>
-header[data-testid="stHeader"] { display: none; }
-.block-container { max-width: 1100px; padding-top: 2.2rem; padding-bottom: 3rem; }
-[class*="st-key-card-"] { background: #fff; border-radius: 14px; }
-.brand { font-size: 1.9rem; font-weight: 700; margin-right: 0.8rem; }
-.tagline { color: #57606a; }
-.sec { font-size: 0.9rem; font-weight: 700; letter-spacing: 0.03em; color: #424a53; text-transform: uppercase; }
-.th { font-size: 0.85rem; font-weight: 600; color: #424a53; }
-.muted { color: #6b7280; }
-.cov-yes { color: #2e7d32; }
-.cov-no { color: #b45309; }
-.pill { display: inline-block; font-size: 0.82rem; padding: 0.05rem 0.55rem; border-radius: 6px; margin-bottom: 0.25rem; }
-.pill.red { background: #fdecec; color: #c62828; }
-.pill.amber { background: #fff1dc; color: #9a5b00; }
-.pill.gray { background: #eeeeee; color: #57606a; }
-.file-chip { border: 1.5px dashed #c8ccd2; border-radius: 10px; padding: 0.55rem 0.9rem; }
-.plan { border: 1.5px solid; border-radius: 10px; padding: 0.75rem 1rem; margin: 0.15rem 0 0.6rem; background: #fff; }
-.plan.ok { border-color: #8bc34a; }
-.plan.no { border-color: #f0a830; }
-.tag { font-size: 0.82rem; padding: 0.1rem 0.5rem; border-radius: 6px; margin-right: 0.45rem; }
-.tag.ok { background: #e6f2d9; color: #33691e; }
-.tag.no { background: #fdebd3; color: #9a5b00; }
-.plan ol { margin: 0.4rem 0 0 1.2rem; padding: 0; }
-.plan li { margin-bottom: 0.2rem; }
-hr { margin: 0.3rem 0 !important; }
-a.quick-exit {
-  position: fixed; top: 3.3rem; right: max(1rem, calc((100vw - 1100px) / 2 + 1rem)); z-index: 1000000;
-  background: #d93030; color: #fff !important; text-decoration: none !important;
-  padding: 0.55rem 1.2rem; border-radius: 0.6rem; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-}
-a.quick-exit:hover { background: #a61f1f; }
+[class*="st-key-card-"] {{ background: #fff; border-radius: 16px; }}
+.nmd-title {{ font-size: 1.25rem; font-weight: 700; margin: 0 0 0.4rem; }}
+.th {{ font-size: 0.85rem; font-weight: 600; color: #4A4560; }}
+.muted {{ color: #6B6880; }}
+.plan {{ border: 1.5px solid; border-radius: 12px; padding: 0.75rem 1rem; margin: 0.6rem 0; background: #fff; }}
+.plan.ok {{ border-color: {COLORS["covered_border"]}; }}
+.plan.no {{ border-color: {COLORS["notcovered_border"]}; }}
+.plan .nmd-chip {{ margin-right: 0.45rem; }}
+.plan ol {{ margin: 0.4rem 0 0 1.2rem; padding: 0; }}
+.plan li {{ margin-bottom: 0.2rem; }}
+hr {{ margin: 0.3rem 0 !important; }}
+/* Quick exit stays visible while scrolling (CLAUDE.md non-negotiable). */
+a.nmd-exit {{ position: fixed; top: 1.4rem; right: max(1rem, calc((100vw - 940px) / 2 + 1rem));
+             z-index: 1000000; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); }}
 </style>
 """
 
@@ -113,33 +96,33 @@ def covered_cell(debt, cov):
         return '<span class="muted">—</span>'
     if cov["status"] == "covered":
         if debt["original"] and debt["collection"]:
-            return f'<span class="cov-yes">✅ Yes, send to {h(short(debt["collection"]))}</span>'
-        return '<span class="cov-yes">✅ Yes</span>'
-    return {"not_covered_secured": '<span class="cov-no">❌ No, secured debt</span>',
-            "not_covered_date": '<span class="cov-no">❌ No, before July 1, 2023</span>',
-            "needs_info": '<span class="muted">? Start date unknown</span>'}[cov["status"]]
+            return ui.chip(f"Yes, send to {short(debt['collection'])}", "covered")
+        return ui.chip("Yes", "covered")
+    return {"not_covered_secured": ui.chip("No, secured debt", "notcovered"),
+            "not_covered_date": ui.chip("No, before July 1, 2023", "notcovered"),
+            "needs_info": ui.chip("Start date unknown", "unknown")}[cov["status"]]
 
 
 def plan_card(debt, cov, full_steps):
     """One result card. All legal text comes verbatim from core's constants."""
     head = f"<b>{h(plan_title(debt))} · {money(core.debt_balance(debt))}</b>"
-    recipient = f"<b>{h(cov['recipient'].title())}, {h(cov['address'])}</b>"
+    send_to = ui.send_to(cov["recipient"].title(), cov["address"]).replace("$", "&#36;")
     if cov["status"] == "covered":
         origin = ""
         if debt["original"] and debt["collection"]:
             origin = (f'<div class="muted">Originally {h(short(debt["original"]))}, '
                       f'sold to {h(short(debt["collection"]))}</div>')
         if not full_steps:
-            return (f'<div class="plan ok"><span class="tag ok">Covered</span>{head}'
-                    f'<span class="muted"> · same 4 steps · send to </span>{recipient}{origin}</div>')
+            return (f'<div class="plan ok">{ui.chip("Covered", "covered")}{head}'
+                    f'<span class="muted"> · same 4 steps</span>{origin}{send_to}</div>')
         steps = [html.escape(s).format(recipient=f"<b>{h(cov['recipient'].title())}</b>",
                                        address=f"<b>{h(cov['address'])}</b>") for s in core.COVERED_STEPS]
         items = "".join(f"<li>{s}</li>" for s in steps)
-        return (f'<div class="plan ok"><span class="tag ok">Covered</span>{head}{origin}'
-                f'<div style="margin-top:0.35rem">Send to: {recipient}</div><ol>{items}</ol></div>')
-    tag = "Start date unknown" if cov["status"] == "needs_info" else "Not covered"
+        return f'<div class="plan ok">{ui.chip("Covered", "covered")}{head}{origin}{send_to}<ol>{items}</ol></div>'
+    tag = (ui.chip("Start date unknown", "unknown") if cov["status"] == "needs_info"
+           else ui.chip("Not covered", "notcovered"))
     text = core.next_steps(cov)[0]
-    return f'<div class="plan no"><span class="tag no">{tag}</span>{head}<div>{h(text)}</div></div>'
+    return f'<div class="plan no">{tag}{head}<div>{h(text)}</div></div>'
 
 
 # Cache key includes the prompt + schema, so editing them forces a fresh Claude call.
@@ -262,16 +245,15 @@ def run_analysis(pdf_bytes, intake_json, prompt_version):
 
 # --- Header + Quick exit (fixed, always visible) -------------------------------
 
-st.markdown(CSS + '<a class="quick-exit" href="https://www.google.com/search?q=weather" target="_self">Quick exit</a>'
-            '<div><span class="brand">NotMyDebt</span>'
-            '<span class="tagline">Synthetic data · Draft for advocate review</span></div>',
-            unsafe_allow_html=True)
+ui.inject_css()
+st.markdown(APP_CSS, unsafe_allow_html=True)
+ui.header(logo=str(ROOT / "assets" / "notmydebt_logo.png"))
 
 # --- 1 · About you ---------------------------------------------------------------
 
 with st.container(border=True, key="card-about"):
     title_col, fill_col = st.columns([4, 1.5], vertical_alignment="center")
-    title_col.markdown('<div class="sec">1 · About you</div>', unsafe_allow_html=True)
+    title_col.markdown(ui.step("Step 1") + '<div class="nmd-title">About you</div>', unsafe_allow_html=True)
     fill_col.button("Fill with sample answers", on_click=fill_sample_answers, width="stretch",
                     help="Fills in Dana's synthetic answers. The sample reports belong to her.")
 
@@ -336,7 +318,8 @@ if accounts:
                                              "".join(chr(255 - ord(ch)) for ch in start[d["key"]])))
 
     with st.container(border=True, key="card-accounts"):
-        st.markdown('<div class="sec">2 · Which of these didn\'t you agree to?</div>', unsafe_allow_html=True)
+        st.markdown(ui.step("Step 2") + '<div class="nmd-title">Which of these didn\'t you agree to?</div>',
+                    unsafe_allow_html=True)
         if st.session_state.get("notice"):
             st.info(st.session_state["notice"])
         widths = [0.9, 2.4, 0.9, 0.9, 2.8, 2.0]
@@ -358,9 +341,8 @@ if accounts:
                 c[1].markdown(account_html, unsafe_allow_html=True)
                 c[2].markdown(mm_yyyy((d["original"] or {}).get("date_opened")))
                 c[3].markdown(f"<div>{money(core.debt_balance(d))}</div>", unsafe_allow_html=True)
-                label, color = PILL[debt_prediction(d)]
-                c[4].markdown(f'<div><span class="pill {color}">{label}</span></div>'
-                              f'<div class="muted">{h(debt_summary(d))}</div>', unsafe_allow_html=True,
+                c[4].markdown(("<div>" + ui.prediction_chip(debt_prediction(d)) + "</div>"
+                               + ui.evidence([debt_summary(d)])).replace("$", "&#36;"), unsafe_allow_html=True,
                               help="\n\n".join(debt_evidence(d)).replace("$", "\\$") or None)
                 c[5].markdown(covered_cell(d, covs[d["key"]]), unsafe_allow_html=True)
             st.write("")
@@ -380,16 +362,16 @@ if accounts:
             return f"{n} debt{'s' if n != 1 else ''}"
 
         with st.container(border=True, key="card-plan"):
-            st.markdown('<div class="sec">3 · Your action plan</div>', unsafe_allow_html=True)
+            st.markdown(ui.step("Step 3") + '<div class="nmd-title">Your action plan</div>', unsafe_allow_html=True)
             if not mine:
                 st.info("No debts checked. Check the debts you didn't agree to, then Submit.")
             else:
-                parts = [f"**{n_debts(len(covered))} you can stop collection on · "
-                         f"\\${sum(core.debt_balance(d) for d in covered):,}**",
-                         f"{n_debts(len(not_covered))} this law doesn't cover"]
+                main = (f"{n_debts(len(covered))} you can stop collection on · "
+                        f"${sum(core.debt_balance(d) for d in covered):,}")
+                rest = [f"{n_debts(len(not_covered))} this law doesn't cover"]
                 if unknown:
-                    parts.append(f"{n_debts(len(unknown))} with an unknown start date")
-                st.success(" · ".join(parts))
+                    rest.append(f"{n_debts(len(unknown))} with an unknown start date")
+                st.markdown(ui.summary(main, "· " + " · ".join(rest)).replace("$", "&#36;"), unsafe_allow_html=True)
                 cards, shown_steps = [], False
                 for d in sorted(mine, key=lambda d: (STATUS_RANK[covs[d["key"]]["status"]], -core.debt_balance(d))):
                     cov = covs[d["key"]]
@@ -405,5 +387,6 @@ if accounts:
                     st.markdown(f"- {h(short(main))} · opened {mm_yyyy(main.get('date_opened'))} · "
                                 f"{money(core.debt_balance(d))}", unsafe_allow_html=True)
 
-            st.caption(f"{core.ASSUMPTION} {core.DISCLAIMER} Nothing is stored. "
-                       f"[Read the law: California Civil Code §§ 1798.97.1–.6]({core.LAW_URL})")
+            st.markdown(ui.disclaimer(f"{core.ASSUMPTION} {core.DISCLAIMER} Nothing is stored.")
+                        + f'<p class="nmd-disclaimer"><a href="{h(core.LAW_URL)}" target="_blank">'
+                          'Read the law: California Civil Code §§ 1798.97.1–.6</a></p>', unsafe_allow_html=True)
