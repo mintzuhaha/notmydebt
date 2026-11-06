@@ -24,8 +24,9 @@ clicks Submit, and gets next steps for each.
 - Model from env `CLAUDE_MODEL`, default `claude-sonnet-5-5`
 - The PDF goes to Claude as a base64 document block, PDF first, then the text instruction:
   `{"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}}`
-- Structured output: forced tool use, `tool_choice={"type": "tool", "name": "record_accounts"}`.
-  Use `max_tokens=8000`. If `stop_reason == "max_tokens"`, raise a clear error instead of parsing half a response.
+- Structured output: the `record_accounts` tool with `strict: true`, `tool_choice={"type": "auto"}`, and a prompt
+  that names the tool. Forced `tool_choice` (`{"type": "tool"}`) returns a 400 on `claude-sonnet-5-5`. Raise if no
+  tool call comes back. Use `max_tokens=8000`. If `stop_reason == "max_tokens"`, raise a clear error instead of parsing half a response.
 
 ## Files
 
@@ -120,18 +121,21 @@ COVERED_STEPS = [
     "representations made herein are true, correct, and contain no material omissions of fact.\"",
     "Send both to {recipient}, {address}. Certified mail is recommended so you have proof it arrived.",
     "What happens next: once they have both, they must stop collecting until their review is done "
-    "(§ 1798.97.2(b)). Within 10 business days they must tell the credit bureaus the account is disputed "
-    "(§ 1798.97.2(d)(1)). Within 10 business days of finishing their review, they must send you a written "
-    "decision (§ 1798.97.2(d)(3)).",
+    "(§ 1798.97.2(b)). Within 10 business days, if they reported this debt to the credit bureaus, they must "
+    "tell the bureaus the account is disputed (§ 1798.97.2(d)(1)). Within 10 business days of finishing their "
+    "review, they must send you a written decision (§ 1798.97.2(d)(3)).",
 ]
 
 NOT_COVERED_SECURED = ("Not covered: this law doesn't apply to secured debts (Civ. Code § 1798.97.4(a)). "
                        "What you can do: talk to a legal aid attorney about other options.")
 
-NOT_COVERED_DATE = ("Not covered: the notice process only applies to debts incurred on or after "
-                    "July 1, 2023 (Civ. Code § 1798.97.5(a)). What you can do: if you're sued over this "
-                    "debt, you can still raise coerced debt in that lawsuit (§ 1798.97.5(b)). Talk to a "
-                    "legal aid attorney.")
+NOT_COVERED_DATE = ("Not covered: this law only applies to debts incurred on or after July 1, 2023 "
+                    "(Civ. Code § 1798.97.5(a)). What you can do: if a creditor or collector sues you over "
+                    "this debt, you can file a cross-complaint in that lawsuit saying it's coerced debt, as "
+                    "long as there's no final judgment yet (§ 1798.97.5(b)). Talk to a legal aid attorney.")
+
+LAW_URL = ("https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml"
+           "?lawCode=CIV&division=3.&title=1.81.35.&part=4.&chapter=&article=")
 
 NEEDS_INFO = ("We couldn't find when this debt started. The law covers debts incurred on or after "
               "July 1, 2023. Check the original account's open date with your advocate.")
