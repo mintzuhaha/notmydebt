@@ -1,6 +1,7 @@
 [
   {
     "creditor": "PACIFIC CREST CARD",
+    "short_name": "Pacific Crest card",
     "account_number": "XXXX-3391",
     "last4": "3391",
     "section": "Accounts with Adverse Information",
@@ -18,14 +19,16 @@
     "consumer_phone_on_account": null,
     "linked_last4": "8820",
     "prediction": "likely_coerced",
+    "summary": "Credit card she says she never opened \u00b7 sold to Summit",
     "evidence": [
-      "Opened 08/14/2023, during the relationship (2022-04 to 2025-01), and she says \"a credit card ... I never opened\".",
-      "Remarks: \"PURCHASED BY ANOTHER LENDER\"; charged off 05/2025, after she left in January 2025.",
-      "Same debt as the Summit Recovery Group collection (original creditor \"PACIFIC CREST CRD\", $6,400 high balance)."
+      "Her story: \"collectors have been calling about a credit card and a loan I never opened.\"",
+      "Opened 08/14/2023, during the relationship (2022-04 to 2025-01).",
+      "Charged off 05/2025 and placed with Summit Recovery Group; the original balance of $6,400 matches this card's high balance."
     ]
   },
   {
     "creditor": "QUICKFUND PERSONAL LOAN",
+    "short_name": "QuickFund loan",
     "account_number": "XXXX-6605",
     "last4": "6605",
     "section": "Accounts with Adverse Information",
@@ -43,14 +46,16 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_coerced",
+    "summary": "Opened after she left \u00b7 unknown PO box first reported 03/2025",
     "evidence": [
-      "Opened 03/04/2025, after she moved out in January 2025, and she says collectors called about \"a loan I never opened\".",
-      "Unknown address \"PO BOX 2291, SACRAMENTO\" first reported 03/2025, the month this loan opened; it isn't in her address history.",
-      "Unknown phone (916) 555-0193 in personal info; her phone is (559) 555-0148. Payments were OK until Jul 2026, then went delinquent."
+      "Opened 03/04/2025, after she moved out in 01/2025 and with no tie to her Fresno life (San Jose lender).",
+      "PO BOX 2291, SACRAMENTO first reported 03/2025, the month this loan opened; it is not in her address history.",
+      "Her story: \"a loan I never opened.\""
     ]
   },
   {
     "creditor": "TECHMART FINANCING",
+    "short_name": "TechMart card",
     "account_number": "XXXX-0573",
     "last4": "0573",
     "section": "Accounts with Adverse Information",
@@ -68,14 +73,16 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_coerced",
+    "summary": "She names it: made to open TechMart card he used",
     "evidence": [
-      "She says he made her \"open a TechMart card that he used\".",
+      "Her story: \"He made me ... open a TechMart card that he used.\"",
       "Opened 02/18/2023, during the relationship (2022-04 to 2025-01).",
-      "Remarks: \"UNPAID BALANCE CHARGED OFF\"; balance $1,240."
+      "Charged off with $1,240 unpaid; closed 12/2024, just before she left."
     ]
   },
   {
     "creditor": "VALLEY AUTO FINANCE",
+    "short_name": "Valley Auto loan",
     "account_number": "XXXX-7142",
     "last4": "7142",
     "section": "Accounts with Adverse Information",
@@ -93,14 +100,16 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_coerced",
+    "summary": "Joint car loan she says she was made to co-sign",
     "evidence": [
-      "She says he \"made me co-sign the car loan\"; the report shows \"Joint Account\".",
-      "Opened 11/05/2023, during the relationship (2022-04 to 2025-01).",
-      "Loan type AUTOMOBILE, $406 per month, 72 months; past due $812."
+      "Her story: \"He made me co-sign the car loan.\"",
+      "Joint Account opened 11/05/2023, during the relationship.",
+      "Payments were on time until 09/2026; $812 is now past due."
     ]
   },
   {
     "creditor": "BAYLINE BANK VISA",
+    "short_name": "Bayline Visa",
     "account_number": "XXXX-9014",
     "last4": "9014",
     "section": "Satisfactory Accounts",
@@ -118,13 +127,15 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_hers",
+    "summary": "Opened 2018, before the relationship \u00b7 paid as agreed",
     "evidence": [
       "Opened 05/22/2018, before the relationship began in 2022-04.",
-      "Pay Status \"Current; Paid or Paying as Agreed\"; all payment history OK."
+      "Pay status \"Current; Paid or Paying as Agreed\" with all OK payments."
     ]
   },
   {
     "creditor": "FRESNO COMMUNITY CREDIT UNION",
+    "short_name": "Fresno CU card",
     "account_number": "XXXX-4471",
     "last4": "4471",
     "section": "Satisfactory Accounts",
@@ -142,13 +153,15 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_hers",
+    "summary": "Local Fresno credit union, opened after move \u00b7 paid as agreed",
     "evidence": [
-      "Opened 04/12/2025 in Fresno, where she lives now (610 Harmon Ave, Fresno), after she moved in 2025-02.",
-      "Pay Status \"Current; Paid or Paying as Agreed\"; the creditor's phone has her local 559 area code."
+      "Opened 04/12/2025 with a Fresno lender, after she moved to Fresno 2025-02.",
+      "Credit union phone (559) 555-0186 shares her Fresno area code, and the account is paid as agreed."
     ]
   },
   {
     "creditor": "GOLDEN STATE STUDENT LENDING",
+    "short_name": "Golden State student loan",
     "account_number": "XXXX-2280",
     "last4": "2280",
     "section": "Satisfactory Accounts",
@@ -166,13 +179,15 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_hers",
+    "summary": "Student loan opened 2016, long before the relationship",
     "evidence": [
-      "Opened 09/01/2016, long before the relationship began in 2022-04.",
-      "Pay Status \"Current; Paid or Paying as Agreed\"; all payment history OK."
+      "Opened 09/01/2016, well before the relationship began in 2022-04.",
+      "Pay status \"Current; Paid or Paying as Agreed\" with all OK payments."
     ]
   },
   {
     "creditor": "SUMMIT RECOVERY GROUP",
+    "short_name": "Summit Recovery",
     "account_number": "XXXX-8820",
     "last4": "8820",
     "section": "Collections",
@@ -190,9 +205,10 @@
     "consumer_phone_on_account": null,
     "linked_last4": "3391",
     "prediction": "likely_coerced",
+    "summary": "Collection on the Pacific Crest card she never opened",
     "evidence": [
-      "Original creditor \"PACIFIC CREST CRD\"; original balance $6,400 equals the Pacific Crest card's high balance.",
-      "She says collectors are calling about \"a credit card ... I never opened\"."
+      "Original creditor \"PACIFIC CREST CRD\" and original balance $6,400 match the Pacific Crest card's high balance.",
+      "Her story: \"collectors have been calling about a credit card ... I never opened.\""
     ]
   }
 ]

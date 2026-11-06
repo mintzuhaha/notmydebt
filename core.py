@@ -77,6 +77,8 @@ RECORD_ACCOUNTS = {
                     "additionalProperties": False,
                     "properties": {
                         "creditor": {"type": "string", "description": "As printed."},
+                        "short_name": {"type": "string",
+                                       "description": "2-4 word friendly name keeping the brand's spelling, e.g. 'QuickFund loan', 'TechMart card', 'Summit Recovery'."},
                         "account_number": {"type": "string", "description": "As printed."},
                         "last4": {"type": "string", "description": "Last 4 digits only. 'X X X X - 6 6 0 5' -> '6605'."},
                         "section": {"type": "string", "description": "The report heading the account sits under."},
@@ -95,14 +97,16 @@ RECORD_ACCOUNTS = {
                         "consumer_phone_on_account": _S,
                         "linked_last4": _S,
                         "prediction": {"type": "string", "enum": ["likely_coerced", "needs_review", "likely_hers"]},
+                        "summary": {"type": "string",
+                                    "description": "The strongest evidence as one short line for a table cell (under 12 words), e.g. 'Opened after she moved out · unknown PO box first reported 03/2025'."},
                         "evidence": {"type": "array", "items": {"type": "string"},
                                      "description": "1-3 short plain sentences, each quoting a value from the report or her intake."},
                     },
                     "required": [
-                        "creditor", "account_number", "last4", "section", "account_type", "loan_type",
+                        "creditor", "short_name", "account_number", "last4", "section", "account_type", "loan_type",
                         "collateral", "date_opened", "balance", "status", "is_collection", "original_creditor",
                         "creditor_address", "creditor_phone", "consumer_address_on_account",
-                        "consumer_phone_on_account", "linked_last4", "prediction", "evidence",
+                        "consumer_phone_on_account", "linked_last4", "prediction", "summary", "evidence",
                     ],
                 },
             }
@@ -120,8 +124,8 @@ Extraction:
 - Copy values exactly as printed. Use null when a value is absent. Never guess.
 - last4: the last 4 digits of the account number only. Numbers can be spaced, e.g. "X X X X - 6 6 0 5" -> "6605".
 - section: the report heading the account sits under (e.g. "Collections", "Satisfactory Accounts").
-- date_opened: YYYY-MM-DD, or YYYY-MM if the report gives no day. Null for collections with no open date \
-(a date placed for collection is not an open date).
+- date_opened: YYYY-MM-DD, or YYYY-MM if the report gives no day. If a collection prints its own date opened, \
+copy it. Null only when the account has no open date at all (a date placed for collection is not an open date).
 - balance: the current balance in whole dollars.
 - Careful: on TransUnion-style reports, the address and phone printed under each account are the CREDITOR's \
 contact info, not hers. Put them in creditor_address / creditor_phone. Fill consumer_address_on_account / \
@@ -144,6 +148,8 @@ local to where she lives now, paid as agreed).
 - needs_review: only weak or conflicting signs, e.g. opened during the relationship and nothing else.
 - A collection and the original account it's linked to are the same debt, so give them the same prediction.
 - evidence: 1-3 short plain sentences, each quoting a value from the report or her intake.
+- summary: the strongest evidence as one short line (under 12 words) for a table cell.
+- short_name: a 2-4 word friendly name that keeps the brand's spelling (e.g. "QuickFund loan", "TechMart card").
 - Do not judge legal coverage. Code does that.
 
 Her intake (JSON):
