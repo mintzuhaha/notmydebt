@@ -98,9 +98,9 @@ RECORD_ACCOUNTS = {
                         "linked_last4": _S,
                         "prediction": {"type": "string", "enum": ["likely_coerced", "needs_review", "likely_hers"]},
                         "summary": {"type": "string",
-                                    "description": "The strongest evidence as one short line for a table cell (under 12 words), e.g. 'Opened after she moved out · unknown PO box first reported 03/2025'."},
+                                    "description": "The strongest evidence as one short line for a table cell (under 12 words), written to her as 'you', e.g. 'Opened after you moved out · unknown PO box first reported 03/2025'."},
                         "evidence": {"type": "array", "items": {"type": "string"},
-                                     "description": "1-3 short plain sentences, each quoting a value from the report or her intake."},
+                                     "description": "1-3 short plain sentences written to her as 'you', each quoting a value from the report or her intake."},
                     },
                     "required": [
                         "creditor", "short_name", "account_number", "last4", "section", "account_type", "loan_type",
@@ -149,6 +149,8 @@ local to where she lives now, paid as agreed).
 - A collection and the original account it's linked to are the same debt, so give them the same prediction.
 - evidence: 1-3 short plain sentences, each quoting a value from the report or her intake.
 - summary: the strongest evidence as one short line (under 12 words) for a table cell.
+- She reads the evidence and summary herself, so write both to her in second person ("you", "your"), e.g. \
+"Opened after you moved out", "Matches what you said: 'a credit card I never opened'". Never "she" or "her".
 - short_name: a 2-4 word friendly name that keeps the brand's spelling (e.g. "QuickFund loan", "TechMart card").
 - Do not judge legal coverage. Code does that.
 

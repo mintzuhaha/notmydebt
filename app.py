@@ -1,4 +1,4 @@
-"""NotMyDebt: Streamlit UI. Claude guesses, code applies the law, she decides."""
+"""NotMyDebt: Streamlit UI. Claude guesses, code applies the law, you decide."""
 
 import hashlib
 import html
@@ -25,7 +25,7 @@ RANK = {"likely_coerced": 0, "needs_review": 1, "likely_hers": 2}
 STATUS_RANK = {"covered": 0, "needs_info": 1, "not_covered_secured": 2, "not_covered_date": 3}
 PILL = {"likely_coerced": ("Likely coerced", "red"),
         "needs_review": ("Needs review", "amber"),
-        "likely_hers": ("Likely hers", "gray")}
+        "likely_hers": ("Likely yours", "gray")}
 MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
 st.set_page_config(page_title="NotMyDebt", page_icon="🛡️", layout="wide")
@@ -115,7 +115,7 @@ def dana_line():
     for a in INTAKE["address_history"]:
         city = a["address"].split(",")[-2].strip()
         places.append(f"{city} {month_year(a['from'])}–{month_year(a['to']) if a['to'] else 'now'}")
-    return "Dana's info: " + " · ".join(places) + f" · phone {INTAKE['client']['phone']}"
+    return "Your info: " + " · ".join(places) + f" · phone {INTAKE['client']['phone']}"
 
 
 def covered_cell(debt, cov):
@@ -152,8 +152,12 @@ def plan_card(debt, cov, full_steps):
     return f'<div class="plan no"><span class="tag no">{tag}</span>{head}<div>{h(text)}</div></div>'
 
 
+# Cache key includes the prompt + schema, so editing them forces a fresh Claude call.
+PROMPT_VERSION = hashlib.sha256((core.PROMPT + json.dumps(core.RECORD_ACCOUNTS, sort_keys=True)).encode()).hexdigest()
+
+
 @st.cache_data(show_spinner=False)
-def run_analysis(pdf_bytes):
+def run_analysis(pdf_bytes, prompt_version):
     """One Claude call per distinct PDF (cached in memory). Falls back to a saved result for the samples."""
     try:
         return core.analyze(pdf_bytes, INTAKE), None
@@ -183,10 +187,10 @@ with st.container(border=True, key="card-upload"):
                   for a in INTAKE["address_history"]])
         rel = INTAKE["relationship"]
         st.markdown(f"**Relationship:** {rel['from']} to {rel['to']}. {rel['note']}")
-        st.markdown(f"**Her story:**\n> {INTAKE['story'].replace('$', chr(92) + '$')}")
+        st.markdown(f"**Your story:**\n> {INTAKE['story'].replace('$', chr(92) + '$')}")
 
     up_col, sample_col = st.columns([3, 2])
-    uploaded = up_col.file_uploader("Upload her credit report (PDF)", type=["pdf"])
+    uploaded = up_col.file_uploader("Upload your credit report (PDF)", type=["pdf"])
     sample = sample_col.selectbox("Or use a sample report", list(SAMPLES), index=None, placeholder="Choose a sample")
     if uploaded is not None:
         chosen_name, pdf_bytes = uploaded.name, uploaded.getvalue()
@@ -210,13 +214,13 @@ with st.container(border=True, key="card-upload"):
         else:
             with st.spinner("Reading the report…"):
                 try:
-                    accounts, notice = run_analysis(pdf_bytes)
+                    accounts, notice = run_analysis(pdf_bytes, PROMPT_VERSION)
                     st.session_state.update(accounts=accounts, notice=notice,
                                             report_id=hashlib.sha256(pdf_bytes).hexdigest()[:12], checked=None)
                 except Exception as e:
                     st.error(f"Couldn't read the report: {e}")
 
-# --- 2 · Which of these didn't she agree to? ------------------------------------
+# --- 2 · Which of these didn't you agree to? ------------------------------------
 
 accounts = st.session_state.get("accounts")
 if accounts:
@@ -227,21 +231,21 @@ if accounts:
                                              "".join(chr(255 - ord(ch)) for ch in start[d["key"]])))
 
     with st.container(border=True, key="card-accounts"):
-        st.markdown('<div class="sec">2 · Which of these didn\'t she agree to?</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec">2 · Which of these didn\'t you agree to?</div>', unsafe_allow_html=True)
         if st.session_state.get("notice"):
             st.info(st.session_state["notice"])
-        widths = [0.45, 2.6, 1, 1, 3, 2.1]
+        widths = [0.9, 2.4, 0.9, 0.9, 2.8, 2.0]
         with st.form(f"accounts-{st.session_state['report_id']}", border=False):
             header = st.columns(widths, vertical_alignment="bottom")
-            for col, label in zip(header[1:], ["Account", "Opened", "Balance", "Likely coerced? (Claude)",
-                                               "Covered if coerced? (code)"]):
+            for col, label in zip(header, ["I didn't agree to this", "Account", "Opened", "Balance",
+                                           "Likely coerced? (Claude)", "Covered if coerced? (code)"]):
                 col.markdown(f'<div class="th">{label}</div>', unsafe_allow_html=True)
             checks = {}
             for d in debts:
                 st.divider()
                 c = st.columns(widths)
                 main = d["original"] or d["collection"]
-                checks[d["key"]] = c[0].checkbox(f"She didn't agree to {short(main)}", key=f"chk-{d['key']}",
+                checks[d["key"]] = c[0].checkbox("I didn't agree to this", key=f"chk-{d['key']}",
                                                  label_visibility="collapsed")
                 account_html = f"<div>{h(short(main))}</div>"
                 if d["original"] and d["collection"]:
@@ -258,7 +262,7 @@ if accounts:
             if st.form_submit_button("Submit"):
                 st.session_state["checked"] = [k for k, v in checks.items() if v]
 
-    # --- 3 · Her action plan ------------------------------------------------------
+    # --- 3 · Your action plan ------------------------------------------------------
 
     checked = st.session_state.get("checked")
     if checked is not None:
@@ -271,9 +275,9 @@ if accounts:
             return f"{n} debt{'s' if n != 1 else ''}"
 
         with st.container(border=True, key="card-plan"):
-            st.markdown('<div class="sec">3 · Her action plan</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec">3 · Your action plan</div>', unsafe_allow_html=True)
             if not mine:
-                st.info("No debts checked. Check the debts she didn't agree to, then Submit.")
+                st.info("No debts checked. Check the debts you didn't agree to, then Submit.")
             else:
                 parts = [f"**{n_debts(len(covered))} you can stop collection on · "
                          f"\\${sum(core.debt_balance(d) for d in covered):,}**",

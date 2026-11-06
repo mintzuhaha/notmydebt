@@ -19,17 +19,17 @@
     "consumer_phone_on_account": null,
     "linked_last4": "8820",
     "prediction": "likely_coerced",
-    "summary": "Credit card she says she never opened \u00b7 sold to Summit",
+    "summary": "Matches 'a credit card I never opened' \u00b7 opened during relationship",
     "evidence": [
-      "Her story: \"collectors have been calling about a credit card and a loan I never opened.\"",
-      "Opened 08/14/2023, during the relationship (2022-04 to 2025-01).",
-      "Charged off 05/2025 and placed with Summit Recovery Group; the original balance of $6,400 matches this card's high balance."
+      "You said collectors are calling about 'a credit card and a loan I never opened,' and this is a credit card now in collections.",
+      "It was opened 08/14/2023, while you lived with your partner (2022-04 to 2025-01).",
+      "It was charged off in 05/2025 and sold to Summit Recovery Group, which shows the same $6,400 amount."
     ]
   },
   {
     "creditor": "QUICKFUND PERSONAL LOAN",
     "short_name": "QuickFund loan",
-    "account_number": "XXXX-6605",
+    "account_number": "X X X X - 6 6 0 5",
     "last4": "6605",
     "section": "Accounts with Adverse Information",
     "account_type": "Installment Account",
@@ -46,11 +46,11 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_coerced",
-    "summary": "Opened after she left \u00b7 unknown PO box first reported 03/2025",
+    "summary": "Opened after you moved out \u00b7 unknown PO box first reported 03/2025",
     "evidence": [
-      "Opened 03/04/2025, after she moved out in 01/2025 and with no tie to her Fresno life (San Jose lender).",
-      "PO BOX 2291, SACRAMENTO first reported 03/2025, the month this loan opened; it is not in her address history.",
-      "Her story: \"a loan I never opened.\""
+      "It was opened 03/04/2025, after you left in January 2025 and moved to Fresno.",
+      "An unknown address, PO BOX 2291 in Sacramento, first appeared on your report in 03/2025, the same month.",
+      "You said collectors are calling about 'a loan I never opened,' and the lender is in San Jose, nowhere near your life in Fresno."
     ]
   },
   {
@@ -73,11 +73,11 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_coerced",
-    "summary": "She names it: made to open TechMart card he used",
+    "summary": "Matches what you said: 'open a TechMart card that he used'",
     "evidence": [
-      "Her story: \"He made me ... open a TechMart card that he used.\"",
-      "Opened 02/18/2023, during the relationship (2022-04 to 2025-01).",
-      "Charged off with $1,240 unpaid; closed 12/2024, just before she left."
+      "You said he made you 'open a TechMart card that he used.'",
+      "It was opened 02/18/2023, during your relationship (2022-04 to 2025-01).",
+      "The $1,240 balance is charged off and unpaid."
     ]
   },
   {
@@ -100,11 +100,11 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_coerced",
-    "summary": "Joint car loan she says she was made to co-sign",
+    "summary": "Matches what you said: 'made me co-sign the car loan'",
     "evidence": [
-      "Her story: \"He made me co-sign the car loan.\"",
-      "Joint Account opened 11/05/2023, during the relationship.",
-      "Payments were on time until 09/2026; $812 is now past due."
+      "You said he 'made me co-sign the car loan,' and this is a Joint Account for an automobile.",
+      "It was opened 11/05/2023, during your relationship (2022-04 to 2025-01).",
+      "It only went late in 09/2026, after you had left."
     ]
   },
   {
@@ -129,8 +129,8 @@
     "prediction": "likely_hers",
     "summary": "Opened 2018, before the relationship \u00b7 paid as agreed",
     "evidence": [
-      "Opened 05/22/2018, before the relationship began in 2022-04.",
-      "Pay status \"Current; Paid or Paying as Agreed\" with all OK payments."
+      "It was opened 05/22/2018, almost four years before your relationship began in 2022-04.",
+      "Every month from 11/2024 to 10/2026 is marked 'OK'."
     ]
   },
   {
@@ -153,10 +153,10 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_hers",
-    "summary": "Local Fresno credit union, opened after move \u00b7 paid as agreed",
+    "summary": "Local to your Fresno home \u00b7 paid as agreed",
     "evidence": [
-      "Opened 04/12/2025 with a Fresno lender, after she moved to Fresno 2025-02.",
-      "Credit union phone (559) 555-0186 shares her Fresno area code, and the account is paid as agreed."
+      "It was opened 04/12/2025 with a credit union at 1450 TULARE ST, FRESNO, near your 610 Harmon Ave home.",
+      "Every payment since 04/2025 is marked 'OK'."
     ]
   },
   {
@@ -179,10 +179,10 @@
     "consumer_phone_on_account": null,
     "linked_last4": null,
     "prediction": "likely_hers",
-    "summary": "Student loan opened 2016, long before the relationship",
+    "summary": "Opened 2016, years before the relationship \u00b7 paid as agreed",
     "evidence": [
-      "Opened 09/01/2016, well before the relationship began in 2022-04.",
-      "Pay status \"Current; Paid or Paying as Agreed\" with all OK payments."
+      "It was opened 09/01/2016, long before your relationship began in 2022-04.",
+      "Every month from 11/2024 to 10/2026 is marked 'OK'."
     ]
   },
   {
@@ -205,10 +205,10 @@
     "consumer_phone_on_account": null,
     "linked_last4": "3391",
     "prediction": "likely_coerced",
-    "summary": "Collection on the Pacific Crest card she never opened",
+    "summary": "Collection on the credit card you said you never opened",
     "evidence": [
-      "Original creditor \"PACIFIC CREST CRD\" and original balance $6,400 match the Pacific Crest card's high balance.",
-      "Her story: \"collectors have been calling about a credit card ... I never opened.\""
+      "You said collectors are calling about 'a credit card... I never opened,' and this collection's original creditor is 'PACIFIC CREST CRD'.",
+      "Its original balance of $6,400 matches the Pacific Crest card's high balance of $6,400."
     ]
   }
 ]

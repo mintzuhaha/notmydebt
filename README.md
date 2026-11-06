@@ -1,6 +1,7 @@
 # NotMyDebt
 
-Helps domestic violence advocates in California triage coerced debt on a survivor's credit report.
+Helps survivors of domestic violence in California, ideally working with an advocate, sort out coerced debt
+on their credit report.
 
 - **Claude guesses, with evidence.** Upload a credit report PDF. Claude reads it and flags accounts that look
   coerced, quoting the evidence from the report and the survivor's history.

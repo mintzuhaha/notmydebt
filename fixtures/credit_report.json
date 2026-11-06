@@ -19,11 +19,11 @@
     "consumer_phone_on_account": "(916) 555-0193",
     "linked_last4": "3391",
     "prediction": "likely_coerced",
-    "summary": "Collection of Pacific Crest card \u00b7 phone (916) 555-0193 isn't hers",
+    "summary": "Collection on the Pacific Crest card \u00b7 phone (916) 555-0193 isn't yours",
     "evidence": [
-      "Original creditor PACIFIC CREST CRD and original amount $6,400 match the Pacific Crest card's high balance of $6,400.",
-      "Phone reported (916) 555-0193 is not her phone; her intake phone is (559) 555-0148.",
-      "She says collectors call about \"a credit card ... I never opened.\""
+      "This is the collection for the Pacific Crest card (original creditor 'PACIFIC CREST CRD', original amount $6,400), so it is the same debt.",
+      "The phone on this account is '(916) 555-0193', not your number '(559) 555-0148'.",
+      "You said collectors are calling about 'a credit card and a loan I never opened'."
     ]
   },
   {
@@ -32,7 +32,7 @@
     "account_number": "XXXX-3391",
     "last4": "3391",
     "section": "ACCOUNTS WITH NEGATIVE INFORMATION",
-    "account_type": "Revolving",
+    "account_type": "Revolving - Credit card",
     "loan_type": "Credit card",
     "collateral": null,
     "date_opened": "2023-08-14",
@@ -46,11 +46,11 @@
     "consumer_phone_on_account": "(916) 555-0193",
     "linked_last4": "8820",
     "prediction": "likely_coerced",
-    "summary": "Card opened while living with partner \u00b7 unknown phone (916) 555-0193",
+    "summary": "Matches 'a credit card I never opened' \u00b7 phone (916) 555-0193 isn't yours",
     "evidence": [
-      "Phone reported (916) 555-0193 is not her phone; her intake phone is (559) 555-0148.",
-      "Opened 2023-08-14 at 1427 Alder Crk Rd, during the relationship (2022-04 to 2025-01).",
-      "She says collectors call about \"a credit card ... I never opened.\""
+      "You said collectors are calling about 'a credit card and a loan I never opened', and this is a credit card.",
+      "The phone on this account is '(916) 555-0193', not your number '(559) 555-0148'.",
+      "It was opened 2023-08-14 while you lived with your partner, and went 30 days late in 12/24, just before you left."
     ]
   },
   {
@@ -59,8 +59,8 @@
     "account_number": "XXXX-6605",
     "last4": "6605",
     "section": "ACCOUNTS WITH NEGATIVE INFORMATION",
-    "account_type": "Installment",
-    "loan_type": "Personal loan (unsecured)",
+    "account_type": "Installment - Personal loan (unsecured)",
+    "loan_type": "Personal loan",
     "collateral": null,
     "date_opened": "2025-03-04",
     "balance": 3500,
@@ -73,11 +73,11 @@
     "consumer_phone_on_account": "(916) 555-0193",
     "linked_last4": null,
     "prediction": "likely_coerced",
-    "summary": "Opened after she left \u00b7 unknown PO box first reported 03/2025",
+    "summary": "Opened after you moved out \u00b7 unknown PO box first reported 03/2025",
     "evidence": [
-      "Opened 2025-03-04, after she left in January 2025; PO BOX 2291 first reported 03/2025 isn't one of her addresses.",
-      "Phone reported (916) 555-0193 is not her phone.",
-      "She says collectors call about \"a loan I never opened.\""
+      "Opened 2025-03-04, after you moved out in January 2025 and into 610 Harmon Ave in 02/2025.",
+      "The address 'PO BOX 2291, SACRAMENTO' first appeared 03/2025 and the phone '(916) 555-0193' isn't yours.",
+      "You said collectors are calling about 'a loan I never opened'."
     ]
   },
   {
@@ -86,7 +86,7 @@
     "account_number": "XXXX-7142",
     "last4": "7142",
     "section": "ACCOUNTS WITH NEGATIVE INFORMATION",
-    "account_type": "Installment",
+    "account_type": "Installment - Auto loan",
     "loan_type": "Auto loan",
     "collateral": "2021 compact SUV (secured)",
     "date_opened": "2023-11-05",
@@ -100,10 +100,11 @@
     "consumer_phone_on_account": "(559) 555-0148",
     "linked_last4": null,
     "prediction": "likely_coerced",
-    "summary": "Joint auto loan she says he made her co-sign",
+    "summary": "Matches the car loan you were made to co-sign",
     "evidence": [
-      "Her story: \"He made me co-sign the car loan.\"",
-      "Responsibility is Joint, opened 2023-11-05 while living at 1427 Alder Creek Rd with him."
+      "You said 'He made me co-sign the car loan', and this is a joint auto loan.",
+      "Opened 2023-11-05, during your relationship, with the Alder Creek Rd address you shared.",
+      "Payments were on time until 09/26, then went 30 and 60 days late."
     ]
   },
   {
@@ -112,7 +113,7 @@
     "account_number": "XXXX-0573",
     "last4": "0573",
     "section": "ACCOUNTS WITH NEGATIVE INFORMATION",
-    "account_type": "Revolving",
+    "account_type": "Revolving - Store card",
     "loan_type": "Store card",
     "collateral": null,
     "date_opened": "2023-02-18",
@@ -126,10 +127,11 @@
     "consumer_phone_on_account": "(559) 555-0148",
     "linked_last4": null,
     "prediction": "likely_coerced",
-    "summary": "Store card she says he made her open and used",
+    "summary": "Matches the TechMart card you said he made you open",
     "evidence": [
-      "Her story: \"He made me ... open a TechMart card that he used.\"",
-      "Opened 02/18/2023 at 1427 Alder Crk Rd, during the relationship."
+      "You said 'He made me ... open a TechMart card that he used.'",
+      "Opened 02/18/2023 during your relationship, with the Alder Creek Rd address you shared.",
+      "It went 180 days late in 11/24 and was charged off before you left in January 2025."
     ]
   },
   {
@@ -138,7 +140,7 @@
     "account_number": "XXXX-2280",
     "last4": "2280",
     "section": "ACCOUNTS IN GOOD STANDING",
-    "account_type": "Installment",
+    "account_type": "Installment - Student loan",
     "loan_type": "Student loan",
     "collateral": null,
     "date_opened": "2016-09",
@@ -152,10 +154,10 @@
     "consumer_phone_on_account": "(559) 555-0148",
     "linked_last4": null,
     "prediction": "likely_hers",
-    "summary": "Opened 2016 before relationship \u00b7 her Fresno address and phone",
+    "summary": "Opened 2016, before the relationship \u00b7 your address and phone",
     "evidence": [
-      "Opened 09/2016, before the relationship began in 2022-04.",
-      "Address 610 HARMON AVE and phone (559) 555-0148 match her intake. Status is Pays as agreed."
+      "Opened 09/2016, years before your relationship began in 2022-04.",
+      "It uses your current address '610 HARMON AVE' and phone '(559) 555-0148', and is 'Pays as agreed'."
     ]
   },
   {
@@ -164,7 +166,7 @@
     "account_number": "XXXX-9014",
     "last4": "9014",
     "section": "ACCOUNTS IN GOOD STANDING",
-    "account_type": "Revolving",
+    "account_type": "Revolving - Credit card",
     "loan_type": "Credit card",
     "collateral": null,
     "date_opened": "2018-05",
@@ -178,10 +180,10 @@
     "consumer_phone_on_account": "(559) 555-0148",
     "linked_last4": null,
     "prediction": "likely_hers",
-    "summary": "Opened 2018 before relationship \u00b7 her address and phone",
+    "summary": "Opened 2018, before the relationship \u00b7 your address and phone",
     "evidence": [
-      "Opened May 2018, before the relationship began in 2022-04.",
-      "Address 610 Harmon Ave and phone (559) 555-0148 match her intake. Status is Pays as agreed."
+      "Opened May 2018, before your relationship began in 2022-04.",
+      "It uses your current address '610 Harmon Ave' and phone '(559) 555-0148', and is 'Pays as agreed'."
     ]
   },
   {
@@ -190,7 +192,7 @@
     "account_number": "XXXX-4471",
     "last4": "4471",
     "section": "ACCOUNTS IN GOOD STANDING",
-    "account_type": "Revolving",
+    "account_type": "Revolving - Credit card",
     "loan_type": "Credit card",
     "collateral": null,
     "date_opened": "2025-04",
@@ -204,10 +206,10 @@
     "consumer_phone_on_account": "(559) 555-0148",
     "linked_last4": null,
     "prediction": "likely_hers",
-    "summary": "Opened in Fresno after move \u00b7 her address and phone",
+    "summary": "Opened in Fresno after you moved \u00b7 your address and phone",
     "evidence": [
-      "Opened 04/2025 after she moved to 610 Harmon Ave in 2025-02.",
-      "Address 610 HARMON AVE and phone (559) 555-0148 match her intake. Status is Pays as agreed."
+      "Opened 04/2025 after you moved to 610 Harmon Ave, Fresno in 02/2025.",
+      "It uses your address '610 HARMON AVE' and phone '(559) 555-0148', and is 'Pays as agreed'."
     ]
   }
 ]
