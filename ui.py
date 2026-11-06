@@ -39,6 +39,17 @@ STATUS_CSS
 .nmd-summary span {font-weight: 500;}
 .nmd-sendto {background: #F0ECE5; border-radius: 10px; padding: 10px 12px; font-weight: 600; margin: 8px 0;}
 .nmd-disclaimer {font-size: 12px; color: #7A8583; margin-top: 12px;}
+.nmd-steps {display: flex; justify-content: space-between; font-size: 14px; color: #7A8583; margin: -6px 2px 14px;}
+.nmd-steps .on {font-weight: 700; color: #2A2140;}
+.nmd-plan {margin: 4px 0 14px;}
+.nmd-plan-line {font-size: 15px; color: #5F6B6D;}
+.nmd-plan-big {font-size: 30px; font-weight: 800; color: #5B3B8C; line-height: 1.15; margin: 2px 0;}
+.nmd-bar {display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: #F2A541; margin: 12px 0 6px;}
+.nmd-bar-stop {background: #5B3B8C; height: 100%;}
+.nmd-bar-legend {display: flex; justify-content: space-between; gap: 12px; font-size: 14px; font-weight: 600;}
+.nmd-bar-legend .stop {color: #5B3B8C;}
+.nmd-bar-legend .rest {color: #8A5A0B; text-align: right;}
+.nmd-plan-muted {font-size: 13px; color: #7A8583; margin-top: 8px;}
 </style>
 """
 
@@ -105,3 +116,35 @@ def send_to(recipient, address):
 
 def disclaimer(text):
     return f'<p class="nmd-disclaimer">{escape(text)}</p>'
+
+
+def steps_nav(current, labels=("1 · Upload", "2 · Your accounts", "3 · Your plan")):
+    """Step labels under the progress bar; the current one is bold."""
+    spans = "".join(f'<span class="{"on" if i == current else ""}">{escape(l)}</span>'
+                    for i, l in enumerate(labels, 1))
+    return f'<div class="nmd-steps">{spans}</div>'
+
+
+def _plural(n, word):
+    return f"{n} {word}{'' if n == 1 else 's'}"
+
+
+def plan_graphic(stop_total, stop_count, not_covered_total, not_covered_count, yours_count):
+    """Summary at the top of step 3: big stoppable total, then a purple/marigold bar of
+    stop-now vs. not-covered dollars. $ is written as &#36; so Streamlit doesn't read it as LaTeX."""
+    total = stop_total + not_covered_total
+    stop_pct = round(100 * stop_total / total, 1) if stop_total and total else 0
+    looks = "looks" if yours_count == 1 else "look"
+    return (
+        '<div class="nmd-plan">'
+        '<div class="nmd-plan-line">You can stop collection on</div>'
+        f'<div class="nmd-plan-big">&#36;{stop_total:,}</div>'
+        f'<div class="nmd-plan-line">of the &#36;{total:,} you didn\'t agree to</div>'
+        f'<div class="nmd-bar"><div class="nmd-bar-stop" style="width:{stop_pct}%"></div></div>'
+        '<div class="nmd-bar-legend">'
+        f'<span class="stop">{_plural(stop_count, "debt")} · stop now</span>'
+        f'<span class="rest">{_plural(not_covered_count, "debt")} · not covered, other options below</span>'
+        '</div>'
+        f'<div class="nmd-plan-muted">{_plural(yours_count, "account")} {looks} like yours: nothing to do</div>'
+        '</div>'
+    )

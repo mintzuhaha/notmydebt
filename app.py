@@ -243,73 +243,34 @@ def run_analysis(pdf_bytes, intake_json, prompt_version):
         return json.loads(fixture.read_text()), "Couldn't reach Claude, so this shows a saved result for this sample report."
 
 
-# --- Header + Quick exit (fixed, always visible) -------------------------------
+# --- Wizard state -----------------------------------------------------------------
 
-ui.inject_css()
-st.markdown(APP_CSS, unsafe_allow_html=True)
-ui.header(logo=str(ROOT / "assets" / "notmydebt_logo.png"))
+# Streamlit drops a widget's value when the widget isn't rendered. Re-saving the "About you" answers at the top
+# of every run keeps them when she moves to step 2 or 3 and comes back.
+FORM_KEYS = ("f_phone", "f_story", "f_rel_from_m", "f_rel_from_y", "f_rel_to_m", "f_rel_to_y", "f_sample")
+for _k in FORM_KEYS:
+    if _k in st.session_state:
+        st.session_state[_k] = st.session_state[_k]
 
-# --- 1 · About you ---------------------------------------------------------------
-
-with st.container(border=True, key="card-about"):
-    title_col, fill_col = st.columns([4, 1.5], vertical_alignment="center")
-    title_col.markdown(ui.step("Step 1") + '<div class="nmd-title">About you</div>', unsafe_allow_html=True)
-    fill_col.button("Fill with sample answers", on_click=fill_sample_answers, width="stretch",
-                    help="Fills in Dana's synthetic answers. The sample reports belong to her.")
-
-    with st.form("about-you", border=False):
-        phone = st.text_input("Your phone number", key="f_phone", placeholder="(555) 555-0100")
-
-        st.markdown('**Places you\'ve lived** <span class="muted">· leave "To" blank for where you live now · '
-                    'click the empty row to add a place</span>',
-                    unsafe_allow_html=True)
-        places_df = st.data_editor(
-            st.session_state.get("places_df", places_frame([])), key=f"f_places_{st.session_state.get('form_version', 0)}",
-            num_rows="dynamic", hide_index=True, width="stretch", column_config=PLACE_COLUMNS, placeholder="—")
-
-        st.markdown("**The relationship**")
-        m1, y1, m2, y2 = st.columns(4)
-        from_m = m1.selectbox("Started: month", MONTHS, index=None, placeholder="Month", key="f_rel_from_m")
-        from_y = y1.selectbox("Started: year", YEARS, index=None, placeholder="Year", key="f_rel_from_y")
-        to_m = m2.selectbox("Ended: month", MONTHS, index=None, placeholder="Month", key="f_rel_to_m")
-        to_y = y2.selectbox("Ended: year", [STILL_TOGETHER] + YEARS, index=None, placeholder="Year",
-                            key="f_rel_to_y")
-
-        story = st.text_area(
-            "In your own words", key="f_story", height=110,
-            placeholder="What happened with money? Mention any accounts you know were opened in your name "
-                        "or that you were pushed to sign.")
-
-        st.markdown("**Your credit report**")
-        up_col, sample_col, btn_col = st.columns([3, 2, 1.2], vertical_alignment="bottom")
-        uploaded = up_col.file_uploader("Upload your credit report (PDF)", type=["pdf"])
-        sample = sample_col.selectbox("Or use a sample report", list(SAMPLES), index=None,
-                                      placeholder="Choose a sample", key="f_sample")
-        submitted = btn_col.form_submit_button("Read report", width="stretch")
-        st.caption("Nothing you type is saved. It's only sent to Claude to read your report.")
-
-    if submitted:
-        if uploaded is not None:
-            pdf_bytes = uploaded.getvalue()
-        elif sample:
-            pdf_bytes = (DATA / SAMPLES[sample]).read_bytes()
-        else:
-            pdf_bytes = None
-        intake, errors = read_form(phone, places_df, from_m, from_y, to_m, to_y, story, pdf_bytes)
-        if errors:
-            st.error("Please check:\n" + "\n".join(f"- {e}" for e in errors))
-        else:
-            with st.spinner("Reading the report…"):
-                try:
-                    accounts, notice = run_analysis(pdf_bytes, json.dumps(intake, sort_keys=True), PROMPT_VERSION)
-                    st.session_state.update(accounts=accounts, notice=notice,
-                                            report_id=hashlib.sha256(pdf_bytes).hexdigest()[:12], checked=None)
-                except Exception as e:
-                    st.error(f"Couldn't read the report: {e}")
-
-# --- 2 · Which of these didn't you agree to? ------------------------------------
-
+st.session_state.setdefault("step", 1)
+st.session_state.setdefault("confirmed", set())   # last4 of every account she checked
 accounts = st.session_state.get("accounts")
+if st.session_state.step >= 2 and not accounts:
+    st.session_state.step = 1
+if st.session_state.step == 3 and not (st.session_state.get("plan_ready") and st.session_state.confirmed):
+    st.session_state.step = 2
+step_now = st.session_state.step
+
+
+def go(step):
+    st.session_state.step = step
+    st.rerun()
+
+
+def is_confirmed(debt):
+    return any(a["last4"] in st.session_state.confirmed for a in debt["accounts"])
+
+
 if accounts:
     all_debts = core.group_debts(accounts)
     covs = {d["key"]: core.coverage(d) for d in all_debts}
@@ -317,6 +278,85 @@ if accounts:
     debts = sorted(all_debts, key=lambda d: (RANK[debt_prediction(d)], STATUS_RANK[covs[d["key"]]["status"]],
                                              "".join(chr(255 - ord(ch)) for ch in start[d["key"]])))
 
+# --- Header + Quick exit (fixed, always visible) + progress ------------------------
+
+ui.inject_css()
+st.markdown(APP_CSS, unsafe_allow_html=True)
+ui.header(logo=str(ROOT / "assets" / "notmydebt_logo.png"))
+st.progress(step_now / 3)
+st.markdown(ui.steps_nav(step_now), unsafe_allow_html=True)
+
+# --- Step 1 · About you + upload -----------------------------------------------------
+
+if step_now == 1:
+    with st.container(border=True, key="card-about"):
+        title_col, fill_col = st.columns([4, 1.5], vertical_alignment="center")
+        title_col.markdown(ui.step("Step 1") + '<div class="nmd-title">About you</div>', unsafe_allow_html=True)
+        fill_col.button("Fill with sample answers", on_click=fill_sample_answers, width="stretch",
+                        help="Fills in Dana's synthetic answers. The sample reports belong to her.")
+
+        with st.form("about-you", border=False):
+            phone = st.text_input("Your phone number", key="f_phone", placeholder="(555) 555-0100")
+
+            st.markdown('**Places you\'ve lived** <span class="muted">· leave "To" blank for where you live now · '
+                        'click the empty row to add a place</span>',
+                        unsafe_allow_html=True)
+            places_df = st.data_editor(
+                st.session_state.get("places_df", places_frame([])),
+                key=f"f_places_{st.session_state.get('form_version', 0)}",
+                num_rows="dynamic", hide_index=True, width="stretch", column_config=PLACE_COLUMNS, placeholder="—")
+
+            st.markdown("**The relationship**")
+            m1, y1, m2, y2 = st.columns(4)
+            from_m = m1.selectbox("Started: month", MONTHS, index=None, placeholder="Month", key="f_rel_from_m")
+            from_y = y1.selectbox("Started: year", YEARS, index=None, placeholder="Year", key="f_rel_from_y")
+            to_m = m2.selectbox("Ended: month", MONTHS, index=None, placeholder="Month", key="f_rel_to_m")
+            to_y = y2.selectbox("Ended: year", [STILL_TOGETHER] + YEARS, index=None, placeholder="Year",
+                                key="f_rel_to_y")
+
+            story = st.text_area(
+                "In your own words", key="f_story", height=110,
+                placeholder="What happened with money? Mention any accounts you know were opened in your name "
+                            "or that you were pushed to sign.")
+
+            st.markdown("**Your credit report**")
+            up_col, sample_col, btn_col = st.columns([3, 2, 1.2], vertical_alignment="bottom")
+            uploaded = up_col.file_uploader("Upload your credit report (PDF)", type=["pdf"])
+            sample = sample_col.selectbox("Or use a sample report", list(SAMPLES), index=None,
+                                          placeholder="Choose a sample", key="f_sample")
+            submitted = btn_col.form_submit_button("Read report", width="stretch")
+            st.caption("Nothing you type is saved. It's only sent to Claude to read your report.")
+
+        if submitted:
+            if uploaded is not None:
+                pdf_bytes = uploaded.getvalue()
+            elif sample:
+                pdf_bytes = (DATA / SAMPLES[sample]).read_bytes()
+            else:
+                pdf_bytes = None
+            intake, errors = read_form(phone, places_df, from_m, from_y, to_m, to_y, story, pdf_bytes)
+            result = None
+            if errors:
+                st.error("Please check:\n" + "\n".join(f"- {e}" for e in errors))
+            else:
+                with st.spinner("Reading the report…"):
+                    try:
+                        result = run_analysis(pdf_bytes, json.dumps(intake, sort_keys=True), PROMPT_VERSION)
+                    except Exception as e:
+                        st.error(f"Couldn't read the report: {e}")
+            if result:
+                new_accounts, notice = result
+                if new_accounts != accounts:   # a different report or answers: start selections fresh
+                    st.session_state.update(confirmed=set(), plan_ready=False)
+                st.session_state.update(
+                    accounts=new_accounts, notice=notice, report_id=hashlib.sha256(pdf_bytes).hexdigest()[:12],
+                    # keep the table's edits for when she comes back (new key so edits aren't applied twice)
+                    places_df=places_df, form_version=st.session_state.get("form_version", 0) + 1)
+                go(2)
+
+# --- Step 2 · Which of these didn't you agree to? ---------------------------------------
+
+elif step_now == 2:
     with st.container(border=True, key="card-accounts"):
         st.markdown(ui.step("Step 2") + '<div class="nmd-title">Which of these didn\'t you agree to?</div>',
                     unsafe_allow_html=True)
@@ -333,8 +373,10 @@ if accounts:
                 st.divider()
                 c = st.columns(widths)
                 main = d["original"] or d["collection"]
+                # Default comes from session_state["confirmed"], since the checkbox's own value is dropped
+                # whenever step 2 isn't on screen.
                 checks[d["key"]] = c[0].checkbox("I didn't agree to this", key=f"chk-{d['key']}",
-                                                 label_visibility="collapsed")
+                                                 value=is_confirmed(d), label_visibility="collapsed")
                 account_html = f"<div>{h(short(main))}</div>"
                 if d["original"] and d["collection"]:
                     account_html += f'<div class="muted">→ now held by {h(short(d["collection"]))}</div>'
@@ -346,47 +388,57 @@ if accounts:
                               help="\n\n".join(debt_evidence(d)).replace("$", "\\$") or None)
                 c[5].markdown(covered_cell(d, covs[d["key"]]), unsafe_allow_html=True)
             st.write("")
-            if st.form_submit_button("Submit"):
-                st.session_state["checked"] = [k for k, v in checks.items() if v]
+            back_col, next_col, _ = st.columns([1, 1.4, 4])
+            back = back_col.form_submit_button("Back", width="stretch")
+            see_plan = next_col.form_submit_button("See my plan", type="primary", width="stretch")
 
-    # --- 3 · Your action plan ------------------------------------------------------
-
-    checked = st.session_state.get("checked")
-    if checked is not None:
-        mine = [d for d in debts if d["key"] in checked]
-        covered = [d for d in mine if covs[d["key"]]["status"] == "covered"]
-        not_covered = [d for d in mine if covs[d["key"]]["status"] in ("not_covered_secured", "not_covered_date")]
-        unknown = [d for d in mine if covs[d["key"]]["status"] == "needs_info"]
-
-        def n_debts(n):
-            return f"{n} debt{'s' if n != 1 else ''}"
-
-        with st.container(border=True, key="card-plan"):
-            st.markdown(ui.step("Step 3") + '<div class="nmd-title">Your action plan</div>', unsafe_allow_html=True)
-            if not mine:
-                st.info("No debts checked. Check the debts you didn't agree to, then Submit.")
+        if back or see_plan:
+            st.session_state.confirmed = {a["last4"] for d in debts if checks[d["key"]] for a in d["accounts"]}
+        if back:
+            st.session_state.plan_ready = False
+            go(1)
+        if see_plan:
+            if not st.session_state.confirmed:
+                st.warning("Check at least one account first.")
             else:
-                main = (f"{n_debts(len(covered))} you can stop collection on · "
-                        f"${sum(core.debt_balance(d) for d in covered):,}")
-                rest = [f"{n_debts(len(not_covered))} this law doesn't cover"]
-                if unknown:
-                    rest.append(f"{n_debts(len(unknown))} with an unknown start date")
-                st.markdown(ui.summary(main, "· " + " · ".join(rest)).replace("$", "&#36;"), unsafe_allow_html=True)
-                cards, shown_steps = [], False
-                for d in sorted(mine, key=lambda d: (STATUS_RANK[covs[d["key"]]["status"]], -core.debt_balance(d))):
-                    cov = covs[d["key"]]
-                    full = cov["status"] == "covered" and not shown_steps
-                    shown_steps |= full
-                    cards.append(plan_card(d, cov, full_steps=full))
-                st.markdown("".join(cards), unsafe_allow_html=True)
+                st.session_state.plan_ready = True
+                go(3)
 
-            rest = [d for d in debts if d["key"] not in checked]
-            with st.expander(f"Accounts that look like yours ({len(rest)}): nothing to do"):
-                for d in rest:
-                    main = d["original"] or d["collection"]
-                    st.markdown(f"- {h(short(main))} · opened {mm_yyyy(main.get('date_opened'))} · "
-                                f"{money(core.debt_balance(d))}", unsafe_allow_html=True)
+# --- Step 3 · Your action plan ----------------------------------------------------------
 
-            st.markdown(ui.disclaimer(f"{core.ASSUMPTION} {core.DISCLAIMER} Nothing is stored.")
-                        + f'<p class="nmd-disclaimer"><a href="{h(core.LAW_URL)}" target="_blank">'
-                          'Read the law: California Civil Code §§ 1798.97.1–.6</a></p>', unsafe_allow_html=True)
+else:
+    mine = [d for d in debts if is_confirmed(d)]
+    covered = [d for d in mine if covs[d["key"]]["status"] == "covered"]
+    not_covered = [d for d in mine if covs[d["key"]]["status"] in ("not_covered_secured", "not_covered_date")]
+    rest = [d for d in debts if not is_confirmed(d)]
+
+    with st.container(border=True, key="card-plan"):
+        st.markdown(ui.step("Step 3") + '<div class="nmd-title">Your action plan</div>', unsafe_allow_html=True)
+        # Debts with an unknown start date stay out of the graphic; their cards still show below.
+        st.markdown(ui.plan_graphic(sum(core.debt_balance(d) for d in covered), len(covered),
+                                    sum(core.debt_balance(d) for d in not_covered), len(not_covered), len(rest)),
+                    unsafe_allow_html=True)
+        cards, shown_steps = [], False
+        for d in sorted(mine, key=lambda d: (STATUS_RANK[covs[d["key"]]["status"]], -core.debt_balance(d))):
+            cov = covs[d["key"]]
+            full = cov["status"] == "covered" and not shown_steps
+            shown_steps |= full
+            cards.append(plan_card(d, cov, full_steps=full))
+        st.markdown("".join(cards), unsafe_allow_html=True)
+
+        with st.expander(f"Accounts that look like yours ({len(rest)}): nothing to do"):
+            for d in rest:
+                main = d["original"] or d["collection"]
+                st.markdown(f"- {h(short(main))} · opened {mm_yyyy(main.get('date_opened'))} · "
+                            f"{money(core.debt_balance(d))}", unsafe_allow_html=True)
+
+        st.markdown(ui.disclaimer(f"{core.ASSUMPTION} {core.DISCLAIMER} Nothing is stored.")
+                    + f'<p class="nmd-disclaimer"><a href="{h(core.LAW_URL)}" target="_blank">'
+                      'Read the law: California Civil Code §§ 1798.97.1–.6</a></p>', unsafe_allow_html=True)
+
+        back_col, over_col, _ = st.columns([1, 1.4, 4])
+        if back_col.button("Back", width="stretch"):
+            go(2)
+        if over_col.button("Start over", width="stretch"):
+            st.session_state.update(confirmed=set(), plan_ready=False)
+            go(1)
