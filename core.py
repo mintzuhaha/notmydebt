@@ -191,3 +191,91 @@ def analyze(pdf_bytes, intake):
         a["last4"] = _digits4(a.get("last4")) or _digits4(a.get("account_number"))
         a["linked_last4"] = _digits4(a.get("linked_last4"))
     return accounts
+
+
+# ---------------------------------------------------------------------------
+# Coverage: plain code. Claude never decides this.
+# ---------------------------------------------------------------------------
+
+LAW_START = "2023-07-01"  # Civ. Code § 1798.97.5(a)
+SECURED_WORDS = ("AUTO", "MORTGAGE", "HOME EQUITY", "SECURED")
+
+
+def is_secured(account):
+    """Secured debts are excluded (§ 1798.97.4(a)). UNSECURED is checked first: it contains SECURED."""
+    types = " ".join(filter(None, [account.get("account_type"), account.get("loan_type")])).upper()
+    if "UNSECURED" in types:
+        return False
+    collateral = (account.get("collateral") or "").strip().upper()
+    if collateral and collateral not in ("NONE", "N/A", "NA") and "UNSECURED" not in collateral:
+        return True
+    return any(word in types for word in SECURED_WORDS)
+
+
+def group_debts(accounts):
+    """Group a collection with its original account (linked_last4) into one debt."""
+    by_last4 = {a["last4"]: a for a in accounts}
+    seen, debts = set(), []
+    for a in accounts:
+        if a["last4"] in seen:
+            continue
+        group = [a]
+        seen.add(a["last4"])
+        partners = [by_last4.get(a.get("linked_last4"))]
+        partners += [b for b in accounts if b.get("linked_last4") == a["last4"]]
+        for b in partners:
+            if b and b["last4"] not in seen:
+                group.append(b)
+                seen.add(b["last4"])
+        debts.append({
+            "key": "-".join(sorted(x["last4"] for x in group)),
+            "accounts": group,
+            "original": next((x for x in group if not x["is_collection"]), None),
+            "collection": next((x for x in group if x["is_collection"]), None),
+        })
+    return debts
+
+
+def holder(debt):
+    """Who holds the debt now: the collection account if there is one, else the original."""
+    return debt["collection"] or debt["original"]
+
+
+def debt_balance(debt):
+    return holder(debt).get("balance") or 0
+
+
+def _start_date(date_opened):
+    """YYYY-MM-DD as is; YYYY-MM counts as the 1st of that month; anything else is unknown."""
+    if date_opened and re.fullmatch(r"\d{4}-\d{2}-\d{2}", date_opened):
+        return date_opened
+    if date_opened and re.fullmatch(r"\d{4}-\d{2}", date_opened):
+        return date_opened + "-01"
+    return None
+
+
+def coverage(debt):
+    """Would Civ. Code §§ 1798.97.1-.6 cover this debt if it's coerced? Checked in order."""
+    h = holder(debt)
+    result = {"recipient": h["creditor"],
+              "address": h.get("creditor_address") or "the address on their letters to you",
+              "start_date": _start_date(debt["original"]["date_opened"]) if debt["original"] else None}
+    if any(is_secured(a) for a in debt["accounts"]):
+        return {**result, "status": "not_covered_secured"}
+    if result["start_date"] is None:
+        return {**result, "status": "needs_info"}
+    if result["start_date"] < LAW_START:
+        return {**result, "status": "not_covered_date"}
+    return {**result, "status": "covered"}
+
+
+def next_steps(cov, bold=False):
+    """The fixed text for a coverage result. bold=True wraps recipient and address in markdown bold."""
+    if cov["status"] == "covered":
+        recipient, address = cov["recipient"], cov["address"]
+        if bold:
+            recipient, address = f"**{recipient}**", f"**{address}**"
+        return [s.format(recipient=recipient, address=address) for s in COVERED_STEPS]
+    return [{"not_covered_secured": NOT_COVERED_SECURED,
+             "not_covered_date": NOT_COVERED_DATE,
+             "needs_info": NEEDS_INFO}[cov["status"]]]

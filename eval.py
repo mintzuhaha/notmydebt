@@ -57,6 +57,33 @@ def score(accounts, key):
                and got.get("8820", {}).get("linked_last4") == "3391")
     check("link 3391 <-> 8820", link_ok,
           f"3391->{got.get('3391', {}).get('linked_last4')}, 8820->{got.get('8820', {}).get('linked_last4')}")
+
+    secured = sorted(a["last4"] for a in accounts if core.is_secured(a))
+    check("is_secured only for 7142", secured == ["7142"], f"got {secured}")
+
+    # Coverage after she confirms the truly coerced accounts.
+    coerced = {l4 for l4, g in gt.items() if g["label"] == "coerced"}
+    debts = [d for d in core.group_debts(accounts) if any(a["last4"] in coerced for a in d["accounts"])]
+    by_acct = {a["last4"]: (d, core.coverage(d)) for d in debts for a in d["accounts"]}
+
+    def cov_check(last4, status, recipient_last4=None):
+        if last4 not in by_acct:
+            check(f"coverage {last4}: {status}", False, "debt not found")
+            return
+        debt, cov = by_acct[last4]
+        ok = cov["status"] == status
+        detail = f"got {cov['status']}"
+        if recipient_last4:
+            ok &= core.holder(debt)["last4"] == recipient_last4
+            detail += f", sent to {core.holder(debt)['last4']} {cov['recipient']}"
+        check(f"coverage {last4}: {status}" + (f" via {recipient_last4}" if recipient_last4 else ""), ok, detail)
+
+    cov_check("3391", "covered", recipient_last4="8820")
+    cov_check("6605", "covered", recipient_last4="6605")
+    cov_check("0573", "not_covered_date")
+    cov_check("7142", "not_covered_secured")
+    covered_total = sum(core.debt_balance(d) for d in debts if core.coverage(d)["status"] == "covered")
+    check("covered total $10,412", covered_total == 10412, f"got {covered_total}")
     return results
 
 
