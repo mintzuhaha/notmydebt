@@ -1,10 +1,12 @@
 """NotMyDebt: Streamlit UI. Claude guesses, code applies the law, you decide."""
 
+import datetime
 import hashlib
 import html
 import json
 import pathlib
 
+import pandas as pd
 import streamlit as st
 
 import core
@@ -79,10 +81,6 @@ def mm_yyyy(date):
     return f"{date[5:7]}/{date[:4]}" if date and len(date) >= 7 else "—"
 
 
-def month_year(ym):
-    return f"{MONTHS[int(ym[5:7]) - 1]} {ym[:4]}"
-
-
 def short(account):
     return account.get("short_name") or account["creditor"].title()
 
@@ -108,14 +106,6 @@ def plan_title(debt):
     if debt["original"] and debt["collection"]:
         return debt["collection"]["creditor"].title()
     return short(core.holder(debt))
-
-
-def dana_line():
-    places = []
-    for a in INTAKE["address_history"]:
-        city = a["address"].split(",")[-2].strip()
-        places.append(f"{city} {month_year(a['from'])}–{month_year(a['to']) if a['to'] else 'now'}")
-    return "Your info: " + " · ".join(places) + f" · phone {INTAKE['client']['phone']}"
 
 
 def covered_cell(debt, cov):
@@ -155,15 +145,117 @@ def plan_card(debt, cov, full_steps):
 # Cache key includes the prompt + schema, so editing them forces a fresh Claude call.
 PROMPT_VERSION = hashlib.sha256((core.PROMPT + json.dumps(core.RECORD_ACCOUNTS, sort_keys=True)).encode()).hexdigest()
 
+# --- "About you" form helpers ----------------------------------------------------
+
+YEARS = list(range(datetime.date.today().year, 1969, -1))
+STILL_TOGETHER = "Still together"
+PLACE_COLUMNS = {
+    "Address": st.column_config.TextColumn("Address", required=True, width="large"),
+    "From": st.column_config.DateColumn("From", format="MMM YYYY", required=True),
+    "To": st.column_config.DateColumn("To", format="MMM YYYY", help="Leave blank for where you live now."),
+    "Lived with them?": st.column_config.CheckboxColumn(
+        "Lived with them?", default=False, help="Did you live here with the person who caused this debt?"),
+}
+
+
+def ym_to_date(ym):
+    return datetime.date(int(ym[:4]), int(ym[5:7]), 1) if ym else None
+
+
+def to_ym(value):
+    """Date-ish cell -> 'YYYY-MM', or None if blank."""
+    if value is None or (not isinstance(value, str) and pd.isna(value)):
+        return None
+    return pd.Timestamp(value).strftime("%Y-%m")
+
+
+def places_frame(rows):
+    return pd.DataFrame({
+        "Address": pd.Series([r["address"] for r in rows], dtype="string"),
+        "From": pd.Series(pd.to_datetime([ym_to_date(r["from"]) for r in rows]), dtype="datetime64[ns]"),
+        "To": pd.Series(pd.to_datetime([ym_to_date(r["to"]) for r in rows]), dtype="datetime64[ns]"),
+        "Lived with them?": pd.Series([bool(r.get("note")) for r in rows], dtype="bool"),
+    })
+
+
+def build_intake(phone, places, rel_from, rel_to, story):
+    """Same shape core.analyze already gets from data/dana_intake.json."""
+    places = sorted(places, key=lambda p: p["from"])
+    current = next((p["address"] for p in places if not p["to"]), None)
+    return {
+        "client": {"phone": phone.strip() or None, "mailing_address": current},
+        "address_history": [{"address": p["address"], "from": p["from"], "to": p["to"],
+                             **({"note": "lived with partner"} if p["lived_with"] else {})} for p in places],
+        "relationship": {"from": rel_from, "to": rel_to},
+        "story": story.strip(),
+    }
+
+
+SAMPLE_PLACES = [{"address": a["address"], "from": a["from"], "to": a["to"], "lived_with": bool(a.get("note"))}
+                 for a in INTAKE["address_history"]]
+SAMPLE_INTAKE = build_intake(INTAKE["client"]["phone"], SAMPLE_PLACES, INTAKE["relationship"]["from"],
+                             INTAKE["relationship"]["to"], INTAKE["story"])
+
+
+def fill_sample_answers():
+    """Button callback: put Dana's synthetic answers into the form widgets."""
+    rel = INTAKE["relationship"]
+    st.session_state.update(
+        f_phone=INTAKE["client"]["phone"], f_story=INTAKE["story"],
+        f_rel_from_m=MONTHS[int(rel["from"][5:7]) - 1], f_rel_from_y=int(rel["from"][:4]),
+        f_rel_to_m=MONTHS[int(rel["to"][5:7]) - 1] if rel["to"] else None,
+        f_rel_to_y=int(rel["to"][:4]) if rel["to"] else STILL_TOGETHER,
+        places_df=places_frame(list(reversed(INTAKE["address_history"]))),  # newest first
+        form_version=st.session_state.get("form_version", 0) + 1,
+    )
+
+
+def read_form(phone, places_df, from_m, from_y, to_m, to_y, story, pdf_bytes):
+    """Validate the form. Returns (intake, errors)."""
+    errors, places = [], []
+    for _, row in places_df.iterrows():
+        address = str(row["Address"]).strip() if isinstance(row["Address"], str) else ""
+        start, end = to_ym(row["From"]), to_ym(row["To"])
+        if not address and not start and not end:
+            continue
+        if not address:
+            errors.append("Every place needs an address.")
+        if not start:
+            errors.append(f"Add a From date for {address or 'each place'}.")
+        if start and end and start > end:
+            errors.append(f"{address}: From is after To.")
+        places.append({"address": address, "from": start or "", "to": end, "lived_with": bool(row["Lived with them?"])})
+    if not places:
+        errors.append("Add at least one place you've lived.")
+    rel_from = f"{from_y}-{MONTHS.index(from_m) + 1:02d}" if from_m and from_y else None
+    if not rel_from:
+        errors.append("Add the month and year the relationship started.")
+    if to_y == STILL_TOGETHER:
+        rel_to = None
+    elif to_m and to_y:
+        rel_to = f"{to_y}-{MONTHS.index(to_m) + 1:02d}"
+    else:
+        rel_to = None
+        errors.append("Add the month and year the relationship ended, or choose \"Still together\".")
+    if rel_from and rel_to and rel_from > rel_to:
+        errors.append("The relationship start is after its end.")
+    if not pdf_bytes:
+        errors.append("Upload your credit report or choose a sample report.")
+    if errors:
+        return None, list(dict.fromkeys(errors))
+    return build_intake(phone, places, rel_from, rel_to, story), []
+
 
 @st.cache_data(show_spinner=False)
-def run_analysis(pdf_bytes, prompt_version):
-    """One Claude call per distinct PDF (cached in memory). Falls back to a saved result for the samples."""
+def run_analysis(pdf_bytes, intake_json, prompt_version):
+    """One Claude call per distinct PDF + answers (cached in memory only).
+    Falls back to a saved result only for a sample report with the sample answers."""
+    intake = json.loads(intake_json)
     try:
-        return core.analyze(pdf_bytes, INTAKE), None
+        return core.analyze(pdf_bytes, intake), None
     except Exception:
         fixture = SAMPLE_FIXTURES.get(hashlib.sha256(pdf_bytes).hexdigest())
-        if fixture is None:
+        if fixture is None or intake != SAMPLE_INTAKE:
             raise
         return json.loads(fixture.read_text()), "Couldn't reach Claude, so this shows a saved result for this sample report."
 
@@ -175,46 +267,59 @@ st.markdown(CSS + '<a class="quick-exit" href="https://www.google.com/search?q=w
             '<span class="tagline">Synthetic data · Draft for advocate review</span></div>',
             unsafe_allow_html=True)
 
-# --- 1 · Upload -----------------------------------------------------------------
+# --- 1 · About you ---------------------------------------------------------------
 
-with st.container(border=True, key="card-upload"):
-    st.markdown('<div class="sec">1 · Upload</div>', unsafe_allow_html=True)
-    with st.expander(dana_line()):
-        client = INTAKE["client"]
-        st.markdown(f"**Phone:** {client['phone']}  \n**Mailing address:** {client['mailing_address']}  \n"
-                    f"**Contact preference:** {client['contact_preference']}")
-        st.table([{"Address": a["address"], "From": a["from"], "To": a["to"] or "now", "Note": a.get("note", "")}
-                  for a in INTAKE["address_history"]])
-        rel = INTAKE["relationship"]
-        st.markdown(f"**Relationship:** {rel['from']} to {rel['to']}. {rel['note']}")
-        st.markdown(f"**Your story:**\n> {INTAKE['story'].replace('$', chr(92) + '$')}")
+with st.container(border=True, key="card-about"):
+    title_col, fill_col = st.columns([4, 1.5], vertical_alignment="center")
+    title_col.markdown('<div class="sec">1 · About you</div>', unsafe_allow_html=True)
+    fill_col.button("Fill with sample answers", on_click=fill_sample_answers, width="stretch",
+                    help="Fills in Dana's synthetic answers. The sample reports belong to her.")
 
-    up_col, sample_col = st.columns([3, 2])
-    uploaded = up_col.file_uploader("Upload your credit report (PDF)", type=["pdf"])
-    sample = sample_col.selectbox("Or use a sample report", list(SAMPLES), index=None, placeholder="Choose a sample")
-    if uploaded is not None:
-        chosen_name, pdf_bytes = uploaded.name, uploaded.getvalue()
-    elif sample:
-        chosen_name = SAMPLES[sample]
-        pdf_bytes = (DATA / chosen_name).read_bytes()
-    else:
-        chosen_name, pdf_bytes = None, None
+    with st.form("about-you", border=False):
+        phone = st.text_input("Your phone number", key="f_phone", placeholder="(555) 555-0100")
 
-    chip_col, btn_col = st.columns([5, 1.2], vertical_alignment="center")
-    if chosen_name:
-        chip_col.markdown(f'<div class="file-chip">📄 {h(chosen_name)} '
-                          f'<span class="muted">· {max(1, len(pdf_bytes) // 1024)} KB</span></div>',
-                          unsafe_allow_html=True)
-    else:
-        chip_col.markdown('<div class="file-chip muted">No report chosen yet. Upload one or choose a sample.</div>',
-                          unsafe_allow_html=True)
-    if btn_col.button("Read report", width="stretch"):
-        if not pdf_bytes:
-            st.warning("Upload a PDF or choose a sample report first.")
+        st.markdown('**Places you\'ve lived** <span class="muted">· leave "To" blank for where you live now · '
+                    'click the empty row to add a place</span>',
+                    unsafe_allow_html=True)
+        places_df = st.data_editor(
+            st.session_state.get("places_df", places_frame([])), key=f"f_places_{st.session_state.get('form_version', 0)}",
+            num_rows="dynamic", hide_index=True, width="stretch", column_config=PLACE_COLUMNS, placeholder="—")
+
+        st.markdown("**The relationship**")
+        m1, y1, m2, y2 = st.columns(4)
+        from_m = m1.selectbox("Started: month", MONTHS, index=None, placeholder="Month", key="f_rel_from_m")
+        from_y = y1.selectbox("Started: year", YEARS, index=None, placeholder="Year", key="f_rel_from_y")
+        to_m = m2.selectbox("Ended: month", MONTHS, index=None, placeholder="Month", key="f_rel_to_m")
+        to_y = y2.selectbox("Ended: year", [STILL_TOGETHER] + YEARS, index=None, placeholder="Year",
+                            key="f_rel_to_y")
+
+        story = st.text_area(
+            "In your own words", key="f_story", height=110,
+            placeholder="What happened with money? Mention any accounts you know were opened in your name "
+                        "or that you were pushed to sign.")
+
+        st.markdown("**Your credit report**")
+        up_col, sample_col, btn_col = st.columns([3, 2, 1.2], vertical_alignment="bottom")
+        uploaded = up_col.file_uploader("Upload your credit report (PDF)", type=["pdf"])
+        sample = sample_col.selectbox("Or use a sample report", list(SAMPLES), index=None,
+                                      placeholder="Choose a sample", key="f_sample")
+        submitted = btn_col.form_submit_button("Read report", width="stretch")
+        st.caption("Nothing you type is saved. It's only sent to Claude to read your report.")
+
+    if submitted:
+        if uploaded is not None:
+            pdf_bytes = uploaded.getvalue()
+        elif sample:
+            pdf_bytes = (DATA / SAMPLES[sample]).read_bytes()
+        else:
+            pdf_bytes = None
+        intake, errors = read_form(phone, places_df, from_m, from_y, to_m, to_y, story, pdf_bytes)
+        if errors:
+            st.error("Please check:\n" + "\n".join(f"- {e}" for e in errors))
         else:
             with st.spinner("Reading the report…"):
                 try:
-                    accounts, notice = run_analysis(pdf_bytes, PROMPT_VERSION)
+                    accounts, notice = run_analysis(pdf_bytes, json.dumps(intake, sort_keys=True), PROMPT_VERSION)
                     st.session_state.update(accounts=accounts, notice=notice,
                                             report_id=hashlib.sha256(pdf_bytes).hexdigest()[:12], checked=None)
                 except Exception as e:
